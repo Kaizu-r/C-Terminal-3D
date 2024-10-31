@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "vertShader.h"
+#include "renderer.h"
 #include "lineShader.h"
 
 #define WIDTH 64
@@ -59,22 +59,48 @@ int main(){
         printf("\n");
     }
     */
-    //line testing
-    int m = abs(terminal[1].x - terminal[0].x) + 1;
-    int o = abs(terminal[1].y - terminal[0].y) + 1;
-    //ternary operator for testing purposes
-    int p = (m < o) ? o : m;
-    vec3 model[p];
-    lineDraw(&terminal[1], &terminal[0], model, m, o);
 
-    //try to render a line
-    render(model, p);
-    for(int i = 0; i < p; i++){
-        printf("%2f ", model[i].x);
-        printf("%2f ", model[i].y);
-        printf("%2f ", model[i].z);
-        printf("\n");
+    //line testing
+    
+    int line_len = lineLen(terminal, 1, 0);
+    int shape_len = shapeLen(terminal, indices, 3, 0);
+    int point_len = pointsLen(terminal, indices, 3, sizeof(indices)/sizeof(int));
+    printf("%d\n", line_len);
+    printf("%d\n", shape_len);
+    printf("%d\n", point_len);
+
+    //render test
+    vec3 points[point_len];
+    int offset = 0;
+    int stride = 3;
+    int shape_num = (sizeof(indices)/sizeof(int))/sizeof(stride);
+    for(int i = 0; i < shape_num; i++){
+        makeShape(terminal, indices, stride, i, points, &offset);
     }
+    
+    //convert to correct coords
+    int final_len = 0;
+    for(int i = 0; i < point_len; i++){
+        if(points[i].y == points[i+1].x){
+            if(points[i].x != points[i+1])
+                final_len++;
+        }
+    }
+    int x_off = 0;
+    int y_off = 0;
+    int y_temp;
+    int x_temp;
+    for(int i = 0; i < point_len; i += y_off + 1){
+        y_temp = y_off;
+        y_off = yCheck(points, y_temp);
+        for(int j = y_temp; y <= y_off; j += x_off + 1){
+            x_temp = x_off;
+            x_off = xCheck(points, x_temp);
+
+        }
+    }
+
+
     return 0;
     
 }

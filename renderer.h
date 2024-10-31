@@ -1,5 +1,5 @@
-#ifndef VERTSHADER_H
-#define V
+#ifndef RENDERER_H
+#define RENDERER
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -84,6 +84,32 @@ void zPrint(float z){
     else if(z <= 1.0)
         printf("@");
 }
+
+//store only valid points in z
+vec3 depthTest(vec3 vect[], int i, int j){
+    int max = i;
+    for(int k = i + 1; k <= j; k++){
+        if(vect[max].z < vect[k].z)
+            max = k;
+    }
+    return vect[max];
+}
+
+//check range of same x values
+int xCheck(vec3 vect[], int offset){
+    int j = offset;
+    while(vect[j].x == vect[j + 1].x )
+        j++;
+    return j;
+}
+
+int yCheck(vec3 vect, int offset){
+    int j = offset;
+    while(vect[j].y == vect[j + 1].y)
+        j++;
+    return j;
+}
+
 
 //print our vertices
 void render(vec3 vert[], int n){
