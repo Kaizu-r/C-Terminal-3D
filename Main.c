@@ -9,13 +9,18 @@
 
 int main(){
     vec3 vertices[] = {
-        0, 0.5, -1,
-        -0.5, 0, 1,
-        0.5, 0, 1
+        0.4, 0.1, -1,
+        -0.4, 0.5, 0.1,
+        0.5, -0.4, 1,
+        -1, -0.8, -0.5
+
     };
     //left to right in terms of x
     int indices[] = {
-        1, 0, 2
+        3, 2, 1,
+        0, 1, 2,
+        3, 0, 2
+
     };
 
 
@@ -69,37 +74,69 @@ int main(){
     printf("%d\n", shape_len);
     printf("%d\n", point_len);
 
+    //see if our modified lines are working properly
+    vec3 points[point_len];
+    
+    int offset = 0;
+    int stride = 3;
+    int shapes = (sizeof(indices)/sizeof(int))/stride;
+    for(int i = 0; i < shapes; i++){
+        makeShape(terminal, indices, points, stride, i, &offset);
+    }
+
+    //attempt to render
+    render(points, point_len);
+
     //render test
+    /*
     vec3 points[point_len];
     int offset = 0;
     int stride = 3;
-    int shape_num = (sizeof(indices)/sizeof(int))/sizeof(stride);
+    int shape_num = (sizeof(indices)/sizeof(int))/stride;
     for(int i = 0; i < shape_num; i++){
-        makeShape(terminal, indices, stride, i, points, &offset);
+        makeShape(vertices, indices, points, stride, i, &offset);
     }
     
+    //check our points
+
     //convert to correct coords
     int final_len = 0;
     for(int i = 0; i < point_len; i++){
         if(points[i].y == points[i+1].x){
-            if(points[i].x != points[i+1])
+            if(points[i].x != points[i+1].x) //technically, the z doesnt matter since if they both exist in the same xy space, thats just one pixel regardless of z
                 final_len++;
         }
     }
+
+    vec3 final_points[final_len+ 1];
     int x_off = 0;
     int y_off = 0;
+    int final_index = 0;
     int y_temp;
     int x_temp;
-    for(int i = 0; i < point_len; i += y_off + 1){
+    while(y_off < point_len){
         y_temp = y_off;
         y_off = yCheck(points, y_temp);
-        for(int j = y_temp; y <= y_off; j += x_off + 1){
+        while(x_off < point_len){
+            x_off = y_temp;
             x_temp = x_off;
             x_off = xCheck(points, x_temp);
-
+            final_points[final_index++] = depthTest(points, x_temp, x_off);
         }
     }
 
+    //oh god please work
+    /*
+    for(int i = 0; i < final_index + 1; i++){
+        printf("%.2f ", final_points[i].x);
+        printf("%.2f ", final_points[i].y);
+        printf("%.2f ", final_points[i].z);
+        printf("\n");
+    }
+    
+    
+    render(final_points, final_len + 1);
+    */
 
     return 0;
     

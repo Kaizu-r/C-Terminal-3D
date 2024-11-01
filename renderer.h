@@ -103,7 +103,7 @@ int xCheck(vec3 vect[], int offset){
     return j;
 }
 
-int yCheck(vec3 vect, int offset){
+int yCheck(vec3 vect[], int offset){
     int j = offset;
     while(vect[j].y == vect[j + 1].y)
         j++;

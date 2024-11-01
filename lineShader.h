@@ -1,6 +1,7 @@
 #ifndef LINE_SHADER_H
 #define LINE_SHADER_H
 #include <stdlib.h>
+#include <stdio.h>
 #include "coords.h"
 #include "vertex.h"
 /*
@@ -42,7 +43,7 @@ void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     }
     int D = (dy << 1) - dx;
     int y = vert1->y;
-    for(int i = 0; i < n; i++){
+    for(int i = 0; i <= n; i++){
         points[i + offset].x = i + vert1->x;
         points[i + offset].y = y;
         points[i + offset].z = i * z + vert1->z;
@@ -72,7 +73,7 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     int x = vert1->x;
 
     //loop in reverse so it is sorted in ascending order
-    for(int i = 0; i < n; i++){
+    for(int i = 0; i <= n; i++){
         points[i + offset].x = x;
         points[i + offset].y = i + vert1->y;
         points[i + offset].z = i * z + vert1->z;
@@ -87,12 +88,14 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
 
 }
 
-void lineDraw(vec3* vert1, vec3* vert2, vec3 points[], int n, int m, int offset){
+void lineDraw(vec3* vert1, vec3* vert2, vec3 points[], int offset){
     int x0 = vert1->x;
     int y0 = vert1->y;
     int x1 = vert2->x;
     int y1 = vert2->y;
-    if(abs(y1 - y0) < abs(x1 - x0)){
+    int n = abs(x0 - x1);
+    int m = abs(y0 - y1);
+    if(m < n){
         if(x0 > x1)
             lineLow(vert2, vert1, points, n, offset);
         else
@@ -106,6 +109,12 @@ void lineDraw(vec3* vert1, vec3* vert2, vec3 points[], int n, int m, int offset)
     }
 }
 //length of a line
+/* lineLen pseudo shit
+    given points A and B, and dx is Ax - Bx annd dy is Ay - By,
+    the number of points between A and B is determined by finding the greater number
+    between abs of dx and abs of dy
+
+*/
 int lineLen(vec3 vert[], int i, int j){
     int m = abs(vert[i].x - vert[j].x);
     int n = abs(vert[i].y - vert[j].y);
@@ -114,6 +123,13 @@ int lineLen(vec3 vert[], int i, int j){
 
 }
 //length of a shape
+/*
+    pseudo time
+    Given a shape with stride n and points (X0, X1, ..., Xn),
+    the perimter of the shape is the sum of all lines of point xi to xi + 1  until i = n, 
+    then we get the length of the line of point x0 -> xn
+
+*/
 int shapeLen(vec3 vert[], int indices[], int stride, int offset){
     int vert_index = stride * offset;
     int shape_len = 0;
@@ -125,6 +141,15 @@ int shapeLen(vec3 vert[], int indices[], int stride, int offset){
     return shape_len;
 }
 //needed to find the size of our big array
+/*
+    pseudo time
+    Given n indices with stride m, to get the number of points total,
+    get the length of each shape with vertices m following the pattern provided by the indices,
+    where the number of indices per shape is determined by the stride m, and the number of shape is
+    n / m
+
+
+*/
 int pointsLen(vec3 vert[], int indices[], int stride, int index_size){
     int points_len = 0;
     int shapes_n = index_size/stride;
@@ -134,24 +159,66 @@ int pointsLen(vec3 vert[], int indices[], int stride, int index_size){
     return points_len;
 }
 
-void makeShape(vec3 vert[], int indices[], int stride, int offset, vec3 points[], int* point_offset){
-    int start = offset * stride;
-    int index1;
-    int index2;
+//downright the hardest thing to conceptualize
+/*
+    Consider the following vertices = {
+    0, 0.5, 1,
+    -0.5, 0, 1,
+    0.5, 0, 1}
+    and indices = {1, 0, 2}
+    to cast our shape, we have to draw our lines from  1 -> 0, 0 -> 2, then 1->2
+
+    lets say we have lines with length such that A = 5, B = 4, C = 5
+    we have to store the points of A in an array of points points[pointsLen]
+
+    to do this, we must get the length of each line using lineLen, use our lineDraw function such that
+    our points are stored frome points[offset] to points[offset + lineLen] where offset
+    is determined by an accumilator that increments for every lenght of the line that we have drawn
+
+    someway somehow, we need to save the last offset so that the next shape can utilize the offset
+    therefor we must pass a point for our point offset, which will determine the starting value of our offset
+
+*/
+
+//this is the bane of my existence
+void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset, int* point_offset){
+    int indices_start = offset * stride;
     int m;
     int n;
-    //iterate through the stride and increase point offset
-    for(int i = 0; i < stride - 1; i++, *(point_offset)++){
-        index1 = indices[start + i];
-        index2 = indices[start + i + 1];
+    int index1;
+    int index2;
+    int line_offset = *(point_offset); //starting index of starting point of a line
+    for(int i = 0; i < stride - 1; i++){
+        index1 = indices[indices_start + i];
+        index2 = indices[indices_start + i + 1];
         m = abs(vert[index1].x - vert[index2].x);
         n = abs(vert[index1].y - vert[index2].y);
-        lineDraw(&vert[index1], &vert[index2], points, m, n, *(point_offset));
+        lineDraw(&vert[index1], &vert[index2], points, line_offset);
+        line_offset += lineLen(vert, index1, index2);
     }
-    lineDraw(&vert[start], &vert[start + stride - 1], points, m, n, *(point_offset));
-    *(point_offset)++;
-}
+    //draw our last line
+    index1 = indices[indices_start];
+    index2 = indices[indices_start + stride - 1];
+    m = abs(vert[index1].x - vert[index2].x);
+    n = abs(vert[index1].y - vert[index2].y);
+    lineDraw(&vert[index1], &vert[index2], points, line_offset);
+    line_offset += lineLen(vert, index1, index2);
+    printf("%d ", line_offset);
+    //why tf is it different from actual shape length? bro its the same parameters
+    int shape_len = shapeLen(vert, indices, 3, 0);
+    printf("%d\n", shape_len);
 
+    //this part doesnt work properly idk why
+    for(int i = 0; i <= shape_len; i++)
+    {
+        printf("%d\t", i);
+        printf("%.4f ", points[i].x);
+        printf("%.4f ", points[i].y);
+        printf("%.4f ", points[i].z);
+        printf("\n");
+    }
+    *point_offset = line_offset;
+}
 
 
 
