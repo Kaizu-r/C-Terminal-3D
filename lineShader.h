@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "coords.h"
 #include "vertex.h"
+#include "utils.h"
 /*
     its pseudo time!!
     since two points make a line, we use a line algo of somekind to determine the points of the line
@@ -19,18 +20,7 @@
 
 */
 
-//returns slope of z on either x or y depending on mode
-float zGradient(vec3* vert1, vec3* vert2, int mode){
-    
-    int dx = vert2->x - vert1->x;
-    int dy = vert2->y - vert1->y;
-    float dz = vert2->z - vert1->z; //can be negative, doesnt matter
-    
-    if(mode == 0)
-        return dz/dy;
-    return dz/dx;
 
-}
 
 //draw line in terms of x (bresenham algo)
 void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
@@ -215,6 +205,9 @@ void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset
     n = abs(vert[index1].y - vert[index2].y);
     lineDraw(&vert[index1], &vert[index2], points, line_offset);
     line_offset += lineLen(vert, index1, index2);
+
+    //mergesort(points, *point_offset, line_offset);
+    //int total_y = points[line_offset].y - points[*(point_offset)].y;
 
    
     *point_offset = line_offset;
