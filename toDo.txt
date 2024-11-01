@@ -1,0 +1,6 @@
+TODO
+1. Rasterizer
+2. Model Matrix
+3. Field Matrix
+4. Projection Matrix
+5. Rotations and Movement
