@@ -9,17 +9,21 @@
 
 int main(){
     vec3 vertices[] = {
-        0.4, 0.1, -1,
-        -0.4, 0.5, 0.1,
-        0.5, -0.4, 1,
-        -1, -0.8, -0.5
+        -0.5, 0.6, -0.5,
+        -0.5,  -0.6, 0.5,
+        0.5,  0, 1,
+        0.5, 0.5, -1,
+        -0.2, 0.2, -1
 
     };
     //left to right in terms of x
     int indices[] = {
-        3, 2, 1,
-        0, 1, 2,
-        3, 0, 2
+        1, 0, 2,
+        0, 3, 2,
+        1, 4, 2,
+        4, 3, 2
+
+
 
     };
 
@@ -84,8 +88,23 @@ int main(){
         makeShape(terminal, indices, points, stride, i, &offset);
     }
 
+    int final_points_len = zBuffer(points, point_len);
+    vec3 final_points[final_points_len];
+    //transfer our data
+    for(int i = 0; i < final_points_len; i++){
+        final_points[i] = points[i];
+    }
+
+    //test our new points
+    printf("%d\n", final_points_len);
+    for(int i = 0; i < final_points_len; i++){
+        printf("%.4f ", final_points[i].x);
+        printf("%.4f ", final_points[i].y);
+        printf("%.4f ", final_points[i].z);
+        printf("\n");
+    }
     //attempt to render
-    render(points, point_len);
+    render(final_points, final_points_len);
 
     //render test
     /*

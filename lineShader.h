@@ -19,10 +19,15 @@
 
 */
 
-//returns 
-float zGradient(vec3* vert1, vec3* vert2){
+//returns slope of z on either x or y depending on mode
+float zGradient(vec3* vert1, vec3* vert2, int mode){
+    
     int dx = vert2->x - vert1->x;
+    int dy = vert2->y - vert1->y;
     float dz = vert2->z - vert1->z; //can be negative, doesnt matter
+    
+    if(mode == 0)
+        return dz/dy;
     return dz/dx;
 
 }
@@ -33,7 +38,7 @@ void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     int dy = vert2->y - vert1->y;
     int yi = 1;
 
-    float z = zGradient(vert1, vert2);
+    float z = zGradient(vert1, vert2, 1);
     
     //array for our valid points in the line
 
@@ -60,7 +65,14 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     int dx = vert2->x - vert1->x;
     int dy = vert2->y - vert1->y;
     int xi = 1;
-    float z = zGradient(vert1, vert2);
+
+    float z;
+    //to check for vertical lines
+    if(dx == 0)
+        z = zGradient(vert1, vert2, 0);
+    else
+        z = zGradient(vert1, vert2, 1);
+
 
 
 
@@ -203,20 +215,8 @@ void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset
     n = abs(vert[index1].y - vert[index2].y);
     lineDraw(&vert[index1], &vert[index2], points, line_offset);
     line_offset += lineLen(vert, index1, index2);
-    printf("%d ", line_offset);
-    //why tf is it different from actual shape length? bro its the same parameters
-    int shape_len = shapeLen(vert, indices, 3, 0);
-    printf("%d\n", shape_len);
 
-    //this part doesnt work properly idk why
-    for(int i = 0; i <= shape_len; i++)
-    {
-        printf("%d\t", i);
-        printf("%.4f ", points[i].x);
-        printf("%.4f ", points[i].y);
-        printf("%.4f ", points[i].z);
-        printf("\n");
-    }
+   
     *point_offset = line_offset;
 }
 
