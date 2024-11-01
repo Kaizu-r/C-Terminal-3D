@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "vertShader.h"
+#include "renderer.h"
 #include "lineShader.h"
 
 #define WIDTH 64
@@ -9,13 +9,22 @@
 
 int main(){
     vec3 vertices[] = {
-        0, 0.5, -1,
-        -0.5, 0, 1,
-        0.5, 0, 1
+        -0.5, 0.6, -0.5,
+        -0.5,  -0.6, 0.5,
+        0.5,  0, 1,
+        0.5, 0.5, -1,
+        -0.2, 0.2, -1
+
     };
     //left to right in terms of x
     int indices[] = {
-        1, 0, 2
+        1, 0, 2,
+        0, 3, 2,
+        1, 4, 2,
+        4, 3, 2
+
+
+
     };
 
 
@@ -59,22 +68,95 @@ int main(){
         printf("\n");
     }
     */
-    //line testing
-    int m = abs(terminal[1].x - terminal[0].x) + 1;
-    int o = abs(terminal[1].y - terminal[0].y) + 1;
-    //ternary operator for testing purposes
-    int p = (m < o) ? o : m;
-    vec3 model[p];
-    lineDraw(&terminal[1], &terminal[0], model, m, o);
 
-    //try to render a line
-    render(model, p);
-    for(int i = 0; i < p; i++){
-        printf("%2f ", model[i].x);
-        printf("%2f ", model[i].y);
-        printf("%2f ", model[i].z);
+    //line testing
+    
+    int line_len = lineLen(terminal, 1, 0);
+    int shape_len = shapeLen(terminal, indices, 3, 0);
+    int point_len = pointsLen(terminal, indices, 3, sizeof(indices)/sizeof(int));
+    printf("%d\n", line_len);
+    printf("%d\n", shape_len);
+    printf("%d\n", point_len);
+
+    //see if our modified lines are working properly
+    vec3 points[point_len];
+    
+    int offset = 0;
+    int stride = 3;
+    int shapes = (sizeof(indices)/sizeof(int))/stride;
+    for(int i = 0; i < shapes; i++){
+        makeShape(terminal, indices, points, stride, i, &offset);
+    }
+
+    int final_points_len = zBuffer(points, point_len);
+    vec3 final_points[final_points_len];
+    //transfer our data
+    for(int i = 0; i < final_points_len; i++){
+        final_points[i] = points[i];
+    }
+
+    //test our new points
+    printf("%d\n", final_points_len);
+    for(int i = 0; i < final_points_len; i++){
+        printf("%.4f ", final_points[i].x);
+        printf("%.4f ", final_points[i].y);
+        printf("%.4f ", final_points[i].z);
         printf("\n");
     }
+    //attempt to render
+    render(final_points, final_points_len);
+
+    //render test
+    /*
+    vec3 points[point_len];
+    int offset = 0;
+    int stride = 3;
+    int shape_num = (sizeof(indices)/sizeof(int))/stride;
+    for(int i = 0; i < shape_num; i++){
+        makeShape(vertices, indices, points, stride, i, &offset);
+    }
+    
+    //check our points
+
+    //convert to correct coords
+    int final_len = 0;
+    for(int i = 0; i < point_len; i++){
+        if(points[i].y == points[i+1].x){
+            if(points[i].x != points[i+1].x) //technically, the z doesnt matter since if they both exist in the same xy space, thats just one pixel regardless of z
+                final_len++;
+        }
+    }
+
+    vec3 final_points[final_len+ 1];
+    int x_off = 0;
+    int y_off = 0;
+    int final_index = 0;
+    int y_temp;
+    int x_temp;
+    while(y_off < point_len){
+        y_temp = y_off;
+        y_off = yCheck(points, y_temp);
+        while(x_off < point_len){
+            x_off = y_temp;
+            x_temp = x_off;
+            x_off = xCheck(points, x_temp);
+            final_points[final_index++] = depthTest(points, x_temp, x_off);
+        }
+    }
+
+    //oh god please work
+    /*
+    for(int i = 0; i < final_index + 1; i++){
+        printf("%.2f ", final_points[i].x);
+        printf("%.2f ", final_points[i].y);
+        printf("%.2f ", final_points[i].z);
+        printf("\n");
+    }
+    
+    
+    render(final_points, final_len + 1);
+    */
+
     return 0;
     
 }

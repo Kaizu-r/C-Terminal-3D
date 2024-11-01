@@ -1,5 +1,5 @@
-#ifndef VERTSHADER_H
-#define V
+#ifndef RENDERER_H
+#define RENDERER
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,12 +22,16 @@ void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
     k = 0;
     //compare and copy to temp
     while(start1 <= j1 && start2 <= j2){
-        //sort by y first, then by x, then by x
+        //sort by y and x ascendingly, then descending for z
         if(vertices[start1].y < vertices[start2].y)
-            temp[k++] = vertices[start1++]; //start1 has higher y therefore printed first
+            temp[k++] = vertices[start1++]; 
         else if(vertices[start2].y < vertices[start1].y)
-            temp[k++] = vertices[start2++]; //start2 has higher y therefore printed first
+            temp[k++] = vertices[start2++]; 
         else if(vertices[start1].x < vertices[start2].x) //now we check for lesser x values if y is equal
+            temp[k++] = vertices[start1++];
+        else if(vertices[start2].x < vertices[start1].x)
+            temp[k++] = vertices[start2++];
+        else if(vertices[start1].z > vertices[start2].z) //now we check for z if x and y are equal
             temp[k++] = vertices[start1++];
         else
             temp[k++] = vertices[start2++];
@@ -85,13 +89,36 @@ void zPrint(float z){
         printf("@");
 }
 
+//store only valid points in z
+/*
+    pseudo time!!!
+    given this array of vec3 points
+    [A, B, C, D, E, F, .........]
+    recall that array is arranged in ascending y and x and descending z. this means that we move k until i at x and y != k at x and y
+    increment j and then move i to k
+   
+*/
+int zBuffer(vec3 vert[], int n){
+    sortVert(vert, n);
+
+    int i = 0;
+    int j = 0;
+    for(int k = 1; k < n; k++){
+       if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
+            vert[j++] = vert[i];
+            i = k;
+       }
+    }
+    vert[j++] = vert[i]; 
+    return j;
+}
+
+
 //print our vertices
 void render(vec3 vert[], int n){
     int line = 0;
     int space = 0;
-    
-    //sort vertex
-    sortVert(vert, n);
+
 
     //start the printing
     line = vert[0].y - line;

@@ -1,0 +1,8 @@
+FUNCTIONALITIES
+
+1. Rasterizer
+2. Depth Testing
+3. Transformations(Rotation)
+
+OPTIMIZATIONS
+1. number of points is greater than actual points due to duplicate lines
