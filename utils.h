@@ -17,7 +17,7 @@ float rad(int deg){
 }
 
 void clear(){
-    printf("\e[1;1H\e[2J");
+    printf("\e[1;1H\e[2J\e[3J");
 }
 
 void wait(int waiting){
@@ -74,8 +74,8 @@ mat3 matMultiply(mat3 mat1, mat3 mat2){
 
 //Transformation matrix
 mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
-    mat3 transform = matMultiply(matz, maty);
-    transform = matMultiply(transform, matx);
+    mat3 transform = matMultiply(matx, maty);
+    transform = matMultiply(transform, matz);
     return transform;
 }
 
@@ -102,7 +102,7 @@ void model(vec3 vert[], int size, int degX, int degY, int degZ){
     }
 }
 
-//test a simple projection 
+//creates the projected coordinates  
 void proj(vec3 vert[], int size, int far, int near, int fov){
     float s = 1/(tan((fov/2) * (M_PI/180))); //this loooks really expensive
     mat3 projection = {
@@ -112,14 +112,43 @@ void proj(vec3 vert[], int size, int far, int near, int fov){
     };
 
     for(int i = 0; i < size; i++){
-        vert[i].x = vert[i].x * projection.matrix[0][0];
-        vert[i].y = vert[i].y * projection.matrix[1][1];
+        vert[i].x = vert[i].x * (projection.matrix[0][0] + (vert[i].z * vert[i].x));
+        vert[i].y = vert[i].y * (projection.matrix[1][1] + (vert[i].z * vert[i].y));
         vert[i].z = vert[i].z * projection.matrix[2][2] + (-far*near)/(far - near);
     }
 
 }
 
 
+
+//translates the vertex coords. Essentially, we move the world
+void translation(vec3 vert[], int size, float x, float y, float z){
+    for(int i = 0; i < size; i++){
+        vert[i].x -= x;
+        vert[i].y -= y;
+        vert[i].z -= z;
+    }
+}
+
+//setup the view matrix
+void view(vec3 vert[], int size){
+    for(int i = 0; i < size; i++){
+        if(vert[i].x != 0)
+            vert[i].x = 1/vert[i].x;
+        if(vert[i].y != 0)
+            vert[i].y = 1/vert[i].y;
+        if(vert[i].z != 0)
+            vert[i].z = 1/vert[i].z;
+    }
+}
+
+//setup the camera
+void camera(vec3 vert[], int size, float focal){
+    for(int i = 0; i < size; i++){
+        vert[i].x *= focal;
+        vert[i].y *= focal;
+    }
+}
 
 //custom merge sort algo
 void merge(vec3 vertices[], int i1, int j1, int i2, int j2){

@@ -5,19 +5,19 @@
 #include "lineShader.h"
 #include "utils.h"
 
-#define WIDTH 50
-#define HEIGHT 25
+#define WIDTH 100
+#define HEIGHT 50
 
 int main(){
     vec3 vertices[] = {
-        -0.5, 0.5, -0.5,    //front upper left
-        -0.5, -0.5, -0.5,   //front lower left
-        0.5, 0.5, -0.5,     //front upper right
-        0.5, -0.5, -0.5,    //front lower right
-        -0.5, 0.5, 0.5,    //back upper left
-        -0.5, -0.5, 0.5,   //back lower left
-        0.5, 0.5, 0.5,     //back upper right
-        0.5, -0.5, 0.5,    //back lower right
+        -0.25, 0.25, -0.25,    //front upper left
+        -0.25, -0.25, -0.25,   //front lower left
+        0.25, 0.25, -0.25,     //front upper right
+        0.25, -0.25, -0.25,    //front lower right
+        -0.25, 0.25, 0.25,    //back upper left
+        -0.25, -0.25, 0.25,   //back lower left
+        0.25, 0.25, 0.25,     //back upper right
+        0.25, -0.25, 0.25,    //back lower right
     };
     //left to right in terms of x
     int indices[] = {
@@ -35,36 +35,75 @@ int main(){
         7, 3, 2 
     };
 
+    //setup rotation here
     int xRot = 0;
-    int yRot = 0;
+    int yRot = 10;
     int zRot = 0;
+
+    //setup translation here
+    float xTrans = 0.5;
+    float yTrans = 0;
+    float zTrans = 0;
+
+    //setup camera here
+    float camX = -40;
+    float camY = 0;
+    float camZ = 0;
+    float focal = 1;
+
+    //setup fov here
+    float fov = 60;
+
+    int xR = 0;
+    int yR = 0;
+    int zR = 0;
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 pixels[n];
     vec3 terminal[n];
     while(1){
         //copy vertex data to modvert
         vec3 modVert[n];
+        vec3 viewM[n];
+        vec3 projection[n];
+        vec3 cam[n];
         for(int i = 0; i < n; i++){
             modVert[i] = vertices[i];
         }
-        //setup rotation changes here
 
-        //xRot += 20;
-        yRot += 10;
-       //zRot += 10;
-
+        //edit if needed
+        xR += xRot;
+        yR += yRot;
+        zR += zRot;
+        
+        //translate hte vertex
         //transform
-        model(modVert, n, xRot, yRot, zRot);
+        model(modVert, n, xR, yR, zR);
 
-        //copy model data to projection
-        vec3 projection[n];
+        translation(modVert, n, xTrans, yTrans, zTrans);
+        //translation(modVert, n, xTrans, yTrans, zTrans);
+        //setup our view
         for(int i = 0; i < n; i++){
-            projection[i] = modVert[i];
+            viewM[i] = modVert[i];
         }
-        proj(projection, n, 1, 0, 90);
+        //translation(viewM, n, xTrans, yTrans, zTrans);
+
+        //copy set the projection
+
+        
+
+        for(int i = 0; i < n; i++){
+            projection[i] = viewM[i];
+        }
+        proj(projection, n, 1, 0, fov);
+        
+        for(int i = 0; i < n; i++){
+            cam[i] = projection[i];
+        }
+        camera(cam, n, focal);
+
         //convert 
         for(int i = 0; i < n; i++){
-            pixels[i] = toPixel(&projection[i], WIDTH, HEIGHT);
+            pixels[i] = toPixel(&cam[i], WIDTH, HEIGHT);
             terminal[i] = toTerminal(&pixels[i], WIDTH, HEIGHT);
         }
 
@@ -91,7 +130,7 @@ int main(){
         //test our new points
         //attempt to render
         render(final_points, final_points_len);
-        wait(30);
+        wait(12);
         clear();
     }
     
