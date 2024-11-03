@@ -8,12 +8,29 @@
 #include <stdlib.h>
 #include "vertex.h"
 #include "math.h"
-
+#include <time.h>
 
 //degrees to radians convertion
 float rad(int deg){
     float y = deg * M_PI/180;
     return y;
+}
+
+void clear(){
+    printf("\e[1;1H\e[2J");
+}
+
+void wait(int waiting){
+    int ms = (CLOCKS_PER_SEC/waiting);
+    clock_t start_time = clock();
+    clock_t curr;
+    int elapsed;
+    do
+    {
+        curr = clock();
+        elapsed = (curr - start_time);
+    } while (elapsed < ms);
+    
 }
 
 //rotation matrixes (keep in mind our z is the other way around so multiply the 3rd column by -1)
@@ -84,6 +101,25 @@ void model(vec3 vert[], int size, int degX, int degY, int degZ){
         vert[i].z = vert[i].x * transform.matrix[2][0] + vert[i].y * transform.matrix[2][1] + vert[i].z * transform.matrix[2][2];
     }
 }
+
+//test a simple projection 
+void proj(vec3 vert[], int size, int far, int near, int fov){
+    float s = 1/(tan((fov/2) * (M_PI/180))); //this loooks really expensive
+    mat3 projection = {
+        s, 0, 0,
+        0, s, 0,
+        0, 0, -(far/(far - near))
+    };
+
+    for(int i = 0; i < size; i++){
+        vert[i].x = vert[i].x * projection.matrix[0][0];
+        vert[i].y = vert[i].y * projection.matrix[1][1];
+        vert[i].z = vert[i].z * projection.matrix[2][2] + (-far*near)/(far - near);
+    }
+
+}
+
+
 
 //custom merge sort algo
 void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
