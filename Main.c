@@ -3,27 +3,20 @@
 
 #include "renderer.h"
 #include "lineShader.h"
+#include "utils.h"
 
 #define WIDTH 64
 #define HEIGHT 32
 
 int main(){
     vec3 vertices[] = {
-        -0.5, 0.6, -0.5,
-        -0.5,  -0.6, 0.5,
-        0.5,  0, 1,
-        0.5, 0.5, -1,
-        -0.2, 0.2, -1
-
+        0, 0.5, 0.5,
+        -0.25, 0, 0.5,
+        0.25, 0, 0.5
     };
     //left to right in terms of x
     int indices[] = {
-        1, 0, 2,
-        0, 3, 2,
-        1, 4, 2,
-        4, 3, 2
-
-
+      1, 0, 2
 
     };
 
@@ -32,6 +25,8 @@ int main(){
     vec3 pixels[n];
     vec3 terminal[n];
     char c;
+    //transform
+    model(vertices, n, 180, 0, 0);
     //convert 
     for(int i = 0; i < n; i++){
         pixels[i] = toPixel(&vertices[i], WIDTH, HEIGHT);

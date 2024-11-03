@@ -13,6 +13,11 @@ typedef struct vector2{
     float x;
     float y;
 } vec2;
+//matrix structure
+typedef struct mat{
+    float matrix[3][3];
+}mat3;
+
 
 #endif
 
