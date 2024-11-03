@@ -23,25 +23,25 @@ void sortVert(vec3 vert[], int n){
 void zPrint(float z){
     //textures sheesh
     if(z <= -0.8)
-        printf(".");
-    else if(z <= -0.6)
-        printf(":");
-    else if(z <= -0.4)
-        printf("<");
-    else if(z <= -0.2)
-        printf("|");
-    else if(z <= 0.0)
-        printf("X");
-    else if(z <= 0.2)
-        printf("Q");
-    else if(z <= 0.4)
-        printf("Z");
-    else if(z <= 0.6)
-        printf("*");
-    else if(z <= 0.8)
-        printf("&");
-    else if(z <= 1.0)
         printf("@");
+    else if(z <= -0.6)
+        printf("&");
+    else if(z <= -0.4)
+        printf("*");
+    else if(z <= -0.2)
+        printf("Z");
+    else if(z <= 0.0)
+        printf("Q");
+    else if(z <= 0.2)
+        printf("X");
+    else if(z <= 0.4)
+        printf("|");
+    else if(z <= 0.6)
+        printf("<");
+    else if(z <= 0.8)
+        printf(":");
+    else if(z <= 1.0)
+        printf(".");
 }
 
 //store only valid points in z

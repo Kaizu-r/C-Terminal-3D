@@ -1,5 +1,5 @@
-#ifndef PI
-#define PI 3.14159
+#ifndef M_PI
+#define M_PI 3.14159265
 #endif
 #ifndef UTILS_H
 #define UTILS_H
@@ -12,7 +12,7 @@
 
 //degrees to radians convertion
 float rad(int deg){
-    float y = deg * PI/180;
+    float y = deg * M_PI/180;
     return y;
 }
 
@@ -63,7 +63,7 @@ mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
 }
 
 //responsible for rotating our vertices based on model transfomration
-void model(vec3 vert[], int degX, int degY, int degZ){
+void model(vec3 vert[], int size, int degX, int degY, int degZ){
     float radX = rad(degX);
     float radY = rad(degY);
     float radZ = rad(degZ);
@@ -77,7 +77,7 @@ void model(vec3 vert[], int degX, int degY, int degZ){
     mat3 transform = matTransform(rotX, rotY, rotZ);
 
     //transform each vertex
-    int vertNum = sizeof(vert)/sizeof(vec3);
+    int vertNum = size;
     for(int i = 0; i < vertNum; i++){
         vert[i].x = vert[i].x * transform.matrix[0][0] + vert[i].y * transform.matrix[0][1] + vert[i].z * transform.matrix[0][2];
         vert[i].y = vert[i].x * transform.matrix[1][0] + vert[i].y * transform.matrix[1][1] + vert[i].z * transform.matrix[1][2];
@@ -104,7 +104,7 @@ void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
             temp[k++] = vertices[start1++];
         else if(vertices[start2].x < vertices[start1].x)
             temp[k++] = vertices[start2++];
-        else if(vertices[start1].z > vertices[start2].z) //now we check for z if x and y are equal
+        else if(vertices[start1].z < vertices[start2].z) //now we check for z if x and y are equal
             temp[k++] = vertices[start1++];
         else
             temp[k++] = vertices[start2++];
@@ -140,6 +140,8 @@ float zGradient(vec3* vert1, vec3* vert2, int mode){
     int dy = vert2->y - vert1->y;
     float dz = vert2->z - vert1->z; //can be negative, doesnt matter
     
+    if(dx == 0 || dy == 0 || dz == 0)
+        return 0;
     if(mode == 0)
         return dz/dy;
     return dz/dx;

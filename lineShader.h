@@ -35,6 +35,7 @@ void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     if(dy < 0){
         yi = -1;
         dy = -dy;
+        z = -z;
     }
     int D = (dy << 1) - dx;
     int y = vert1->y;
@@ -69,6 +70,7 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     if(dx < 0){
         xi = -1;
         dx = -dx;
+        z = -z;
     }
 
     int D = (dx << 1) - dy;
