@@ -7,38 +7,52 @@
 
 #define WIDTH 100
 #define HEIGHT 50
+#define FPS 12
 
 int main(){
     vec3 vertices[] = {
-        -0.25, 0.25, -0.25,    //front upper left
-        -0.25, -0.25, -0.25,   //front lower left
-        0.25, 0.25, -0.25,     //front upper right
-        0.25, -0.25, -0.25,    //front lower right
-        -0.25, 0.25, 0.25,    //back upper left
-        -0.25, -0.25, 0.25,   //back lower left
-        0.25, 0.25, 0.25,     //back upper right
-        0.25, -0.25, 0.25,    //back lower right
+        -0.35, 0.35, -0.35,    //front upper left
+        -0.35, -0.35, -0.35,   //front lower left
+        0.35, 0.35, -0.35,     //front upper right
+        0.35, -0.35, -0.35,    //front lower right
+        -0.35, 0.35, 0.35,    //back upper left
+        -0.35, -0.35, 0.35,   //back lower left
+        0.35, 0.35, 0.35,     //back upper right
+        0.35, -0.35, 0.35,    //back lower right
+        
+
+ 
     };
     //left to right in terms of x
     int indices[] = {
+    
     //front
-        0, 1, 2, 
+        0, 1, 2,
         1, 2, 3,
     //back
         4, 5, 6,
-        5, 7, 6,
+        5, 6, 7,
     //left
-        5, 4, 0,
-        5, 1, 0,
+        0, 1, 4,
+        1, 4, 5,
     //right
-        7, 6, 2,
-        7, 3, 2 
+        2, 3, 6,
+        3, 6, 7,
+    //top
+        0, 2, 4,
+        2, 4, 6,
+    //bottom
+        1, 3, 5,
+        3, 5, 7
+
+    
+
     };
 
     //setup rotation here
     int xRot = 10;
-    int yRot = 0;
-    int zRot = 0;
+    int yRot = 10;
+    int zRot = 10;
 
     //set up initial rotation
     int inX = 0;
@@ -58,7 +72,7 @@ int main(){
     float focal = 1;
 
     //setup fov here
-    float fov = 60;
+    float fov= 70;
 
     int xR = 0;
     int yR = 0;
@@ -66,27 +80,51 @@ int main(){
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 pixels[n];
     vec3 terminal[n];
+    vec3 modTrans[n];
+    vec3 modVert[n];
+    vec3 viewM[n];
+    vec3 projection[n];
+    vec3 cam[n];
     while(1){
         //copy vertex data to modvert
-        
-        vec3 modVert[n];
-        vec3 viewM[n];
-        vec3 projection[n];
-        vec3 cam[n];
-
-
-        //initial rot
-       //model(modTrans, n, inX, inY, inZ);
 
         for(int i = 0; i < n; i++){
-            modVert[i] = vertices[i];
+            modTrans[i] = vertices[i];
+        }
+
+        //initial rot
+       model(modTrans, n, inX, inY, inZ);
+
+        for(int i = 0; i < n; i++){
+            modVert[i] = modTrans[i];
         }
 
         //edit if needed
         xR += xRot;
         yR += yRot;
         zR += zRot;
-        
+
+
+
+        //for printing
+        if(xR > 360){
+            xR = xR - 360;
+        }
+        if(xR < -360)
+            xR = xR + 360;
+        if(yR > 360){
+            yR = yR - 360;
+        }
+        if(yR < -360)
+            yR = yR + 360;
+        if(zR > 360){
+            zR = zR - 360;
+        }
+        if(zR < -360)
+            zR = zR + 360;
+        printf("%d\n", xR);
+        printf("%d\n", yR);
+        printf("%d\n", zR);
         //translate hte vertex
         //transform
         model(modVert, n, xR, yR, zR);
@@ -107,10 +145,11 @@ int main(){
         for(int i = 0; i < n; i++){
             projection[i] = viewM[i];
         }
-        //proj(projection, n, 1, 0, fov);
-        
+        proj(projection, n, 1, 0, fov);
+
         for(int i = 0; i < n; i++){
             cam[i] = projection[i];
+            printf("\t%.3f\t%.3f\t%.3f\n", cam[i].x, cam[i].y, cam[i].z);
         }
         //camera(cam, n, focal);
 
@@ -122,6 +161,10 @@ int main(){
 
         int point_len = pointsLen(terminal, indices, 3, sizeof(indices)/sizeof(int));
 
+        //temporary scale our points
+        for(int i = 0; i < n; i++){
+            terminal[i].z = terminal[i].z * 50 + 50;
+        }
 
         //see if our modified lines are working properly
         vec3 points[point_len];
@@ -133,6 +176,10 @@ int main(){
             makeShape(terminal, indices, points, stride, i, &offset);
         }
 
+        //normalize our zs
+        for(int i = 0; i < point_len; i++)
+            points[i].z = (points[i].z - 50)/50;
+
         int final_points_len = zBuffer(points, point_len);
         vec3 final_points[final_points_len];
         //transfer our data
@@ -143,7 +190,7 @@ int main(){
         //test our new points
         //attempt to render
         render(final_points, final_points_len);
-        wait(12);
+        wait(FPS);
         clear();
     }
     
