@@ -112,8 +112,10 @@ void proj(vec3 vert[], int size, int far, int near, int fov){
     };
 
     for(int i = 0; i < size; i++){
-        vert[i].x = vert[i].x * (projection.matrix[0][0] + (vert[i].z * vert[i].x));
-        vert[i].y = vert[i].y * (projection.matrix[1][1] + (vert[i].z * vert[i].y));
+        if(vert[i].x != 0)
+            vert[i].x = vert[i].x * (projection.matrix[0][0] + (vert[i].z));
+        if(vert[i].y != 0)
+            vert[i].y = vert[i].y * (projection.matrix[1][1] + (vert[i].z));
         vert[i].z = vert[i].z * projection.matrix[2][2] + (-far*near)/(far - near);
     }
 
@@ -124,8 +126,8 @@ void proj(vec3 vert[], int size, int far, int near, int fov){
 //translates the vertex coords. Essentially, we move the world
 void translation(vec3 vert[], int size, float x, float y, float z){
     for(int i = 0; i < size; i++){
-        vert[i].x -= x;
-        vert[i].y -= y;
+        vert[i].x += x;
+        vert[i].y += y;
         vert[i].z -= z;
     }
 }

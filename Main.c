@@ -36,12 +36,18 @@ int main(){
     };
 
     //setup rotation here
-    int xRot = 0;
-    int yRot = 10;
+    int xRot = 10;
+    int yRot = 0;
     int zRot = 0;
 
+    //set up initial rotation
+    int inX = 0;
+    int inY = 0;
+    int inZ = 0;
+
+
     //setup translation here
-    float xTrans = 0.5;
+    float xTrans = 0;
     float yTrans = 0;
     float zTrans = 0;
 
@@ -62,10 +68,16 @@ int main(){
     vec3 terminal[n];
     while(1){
         //copy vertex data to modvert
+        
         vec3 modVert[n];
         vec3 viewM[n];
         vec3 projection[n];
         vec3 cam[n];
+
+
+        //initial rot
+       //model(modTrans, n, inX, inY, inZ);
+
         for(int i = 0; i < n; i++){
             modVert[i] = vertices[i];
         }
@@ -78,6 +90,7 @@ int main(){
         //translate hte vertex
         //transform
         model(modVert, n, xR, yR, zR);
+
 
         translation(modVert, n, xTrans, yTrans, zTrans);
         //translation(modVert, n, xTrans, yTrans, zTrans);
@@ -94,12 +107,12 @@ int main(){
         for(int i = 0; i < n; i++){
             projection[i] = viewM[i];
         }
-        proj(projection, n, 1, 0, fov);
+        //proj(projection, n, 1, 0, fov);
         
         for(int i = 0; i < n; i++){
             cam[i] = projection[i];
         }
-        camera(cam, n, focal);
+        //camera(cam, n, focal);
 
         //convert 
         for(int i = 0; i < n; i++){
