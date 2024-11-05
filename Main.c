@@ -5,8 +5,8 @@
 #include "lineShader.h"
 #include "utils.h"
 
-#define WIDTH 100
-#define HEIGHT 40
+#define WIDTH 80
+#define HEIGHT 35
 #define FPS 12
 
 int main(){
@@ -51,7 +51,7 @@ int main(){
 
     //setup rotation here
     int xRot = 0;
-    int yRot = 0;
+    int yRot = 10;
     int zRot = 0;
 
     //set up initial rotation
@@ -71,8 +71,8 @@ int main(){
     float camX = 0;
     float camY = 0.5;
     float camZ = 0.5;
-    int camrX = 0;
-    int camrY = 10;
+    int camrX = 10;
+    int camrY = 0;
     int camrZ = 0;
     float focal = 1;
 
@@ -197,7 +197,7 @@ int main(){
 
         //test our new points
         //attempt to render
-        render(final_points, final_points_len);
+        render(final_points, final_points_len, WIDTH, HEIGHT, '-');
         wait(FPS);
         clear();
     }
