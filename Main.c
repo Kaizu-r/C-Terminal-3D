@@ -6,7 +6,7 @@
 #include "utils.h"
 
 #define WIDTH 100
-#define HEIGHT 50
+#define HEIGHT 40
 #define FPS 12
 
 int main(){
@@ -50,9 +50,9 @@ int main(){
     };
 
     //setup rotation here
-    int xRot = 10;
+    int xRot = 0;
     int yRot = 10;
-    int zRot = 10;
+    int zRot = 0;
 
     //set up initial rotation
     int inX = 0;
@@ -65,15 +65,27 @@ int main(){
     float yTrans = 0;
     float zTrans = 0;
 
+    
+
     //setup camera here
-    float camX = -40;
+    float camX = 0;
     float camY = 0;
     float camZ = 0;
+    int camrX = 10;
+    int camrY = 0;
+    int camrZ = 0;
     float focal = 1;
 
     //setup fov here
-    float fov= 70;
+    float fov= 60;
 
+
+    int vX = 0;
+    int vY = 0;
+    int vZ = 0;
+    float tX = 0;
+    float tY = 0;
+    float tZ = 0;
     int xR = 0;
     int yR = 0;
     int zR = 0;
@@ -87,24 +99,20 @@ int main(){
     vec3 cam[n];
     while(1){
         //copy vertex data to modvert
-
         for(int i = 0; i < n; i++){
-            modTrans[i] = vertices[i];
-        }
-
-        //initial rot
-       model(modTrans, n, inX, inY, inZ);
-
-        for(int i = 0; i < n; i++){
-            modVert[i] = modTrans[i];
+            modVert[i] = vertices[i];
         }
 
         //edit if needed
         xR += xRot;
         yR += yRot;
         zR += zRot;
-
-
+        vX += camrX;
+        vY += camrY;
+        vZ += camrZ;
+        tX = camX;
+        tY = camY;
+        tZ = camZ;
 
         //for printing
         if(xR > 360){
@@ -136,10 +144,10 @@ int main(){
         for(int i = 0; i < n; i++){
             viewM[i] = modVert[i];
         }
-        //translation(viewM, n, xTrans, yTrans, zTrans);
-
-        //copy set the projection
-
+       
+       //transform based on view space
+        view(viewM, n, tX, tY, tZ, vX, vY, vZ);
+    
         
 
         for(int i = 0; i < n; i++){
@@ -151,7 +159,7 @@ int main(){
             cam[i] = projection[i];
             printf("\t%.3f\t%.3f\t%.3f\n", cam[i].x, cam[i].y, cam[i].z);
         }
-        //camera(cam, n, focal);
+        camera(cam, n, focal);
 
         //convert 
         for(int i = 0; i < n; i++){
