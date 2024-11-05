@@ -74,8 +74,8 @@ mat3 matMultiply(mat3 mat1, mat3 mat2){
 
 //Transformation matrix
 mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
-    mat3 transform = matMultiply(maty, matx);
-    transform = matMultiply(matz, transform);
+    mat3 transform = matMultiply(matx, maty);
+    transform = matMultiply(transform, matz);
     return transform;
 }
 
@@ -87,11 +87,9 @@ void model(vec3 vert[], int size, int degX, int degY, int degZ){
 
 
     //get our transformation matrix
-    mat3 transform = {
-        cos(radY)*cos(radZ), sin(radX) * sin(radY) * cos(radZ) - cos(radX)*sin(radZ), cos(radX) * sin(radY) * cos(radZ) + sin(radX) * sin(radZ),
-        cos(radY) * sin(radZ), sin(radX) * sin(radY) * sin(radZ) + cos(radX) * cos(radZ), cos(radX) * sin(radY) * sin(radZ) - sin(radX) * cos(radZ),
-        -sin(radY), sin(radX) * cos(radY), cos(radX) * cos(radY)
-    };
+    
+
+    mat3 transform = matTransform(rotateX(radX), rotateY(radY), rotateZ(radZ));
 
     //transform each vertex
     int vertNum = size;
@@ -108,19 +106,11 @@ void model(vec3 vert[], int size, int degX, int degY, int degZ){
     }
 }
 
-void perspective(vec3 vert[], int size, int near){
-    int d;
-    for(int i = 0; i < size; i++){
-        d = vert[i].z - near;
-        if(d != 0)
-            vert[i].z += 1/d;
-        //z remains unchanged
-    }
-}
+
 
 //creates the projected coordinates  
 void proj(vec3 vert[], int size, int far, int near, int fov){
-    
+
     float s = 1/(tan((fov/2) * (M_PI/180))); //this loooks really expensive
     mat3 projection = {
         s, 0, 0,
@@ -128,20 +118,17 @@ void proj(vec3 vert[], int size, int far, int near, int fov){
         0, 0, -(far/(far - near))
     };
 
-    //perspective(vert, size, near);
 
     for(int i = 0; i < size; i++){
         
         //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
         //
         vert[i].x = vert[i].x * (projection.matrix[0][0] - vert[i].z);
-        vert[i].y = vert[i].y * (projection.matrix[1][1] -vert[i].z);
+        vert[i].y = vert[i].y * (projection.matrix[1][1] - vert[i].z);
     
-        //normalize z
-        //vert[i].z = (vert[i].z + 1)/2;
+       
         //vert[i].z = vert[i].z * projection.matrix[2][2] - (far*near)/(far - near);
-        //revert z back to -1 to 1
-        //vert[i].z = vert[i].z * 2 - 1;
+       
     } 
 
 }
@@ -151,22 +138,23 @@ void proj(vec3 vert[], int size, int far, int near, int fov){
 //translates the vertex coords. Essentially, we move the world
 void translation(vec3 vert[], int size, float x, float y, float z){
     for(int i = 0; i < size; i++){
-        vert[i].x += x;
-        vert[i].y += y;
-        vert[i].z += z;
+        vert[i].x -= x;
+        vert[i].y -= y;
+        vert[i].z -= z;
     }
 }
 
 //setup the view matrix
-void view(vec3 vert[], int size){
+void view(vec3 vert[], int size, float x, float y, float z, int rotX, int rotY, int rotZ){
     for(int i = 0; i < size; i++){
-        if(vert[i].x != 0)
-            vert[i].x = 1/vert[i].x;
-        if(vert[i].y != 0)
-            vert[i].y = 1/vert[i].y;
-        if(vert[i].z != 0)
-            vert[i].z = 1/vert[i].z;
+        //transforms it to view space
+        vert[i].x -= x;
+        vert[i].y -= y;
+        vert[i].z -= z;
     }
+
+    //rotate the view matrix
+    model(vert, size, rotX, rotY, rotZ);
 }
 
 //setup the camera
@@ -225,22 +213,6 @@ void mergesort(vec3 vertices[], int i, int j){
     merge(vertices, i, mid, mid+1, j);
 }
 
-//returns slope of z on either x or y depending on mode
-float zGradient(vec3* vert1, vec3* vert2, int mode){
-    
-    int dx = vert2->x - vert1->x;
-    int dy = vert2->y - vert1->y;
-    float dz = vert2->z - vert1->z; //can be negative, doesnt matter
-    
-    if(dz == 0)
-        return 0;
-
-    if(mode == 0){
-        return dz/dy;
-    }  
-    return dz/dx;
-
-}
 
 //matrix transformations
 

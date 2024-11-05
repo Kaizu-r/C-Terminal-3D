@@ -46,8 +46,7 @@ vec3 toPixel(vec3* vertex, int width, int height){
 //turns pixel coords to terminal coords
 vec3 toTerminal(vec3* pixel, int width, int height){
     vec3 terminal;
-    int shift = width >> 1; //to put the coords further right
-    terminal.x = pixel->x + width/2 + shift;
+    terminal.x = pixel->x + width/2 + width/2;
     terminal.y = -(pixel->y - height/2);
     terminal.z = pixel->z;
 
