@@ -51,7 +51,7 @@ int main(){
 
     //setup rotation here
     int xRot = 0;
-    int yRot = 10;
+    int yRot = 0;
     int zRot = 0;
 
     //set up initial rotation
@@ -69,10 +69,10 @@ int main(){
 
     //setup camera here
     float camX = 0;
-    float camY = 0;
-    float camZ = 0;
-    int camrX = 10;
-    int camrY = 0;
+    float camY = 0.5;
+    float camZ = 0.5;
+    int camrX = 0;
+    int camrY = 10;
     int camrZ = 0;
     float focal = 1;
 
@@ -188,7 +188,7 @@ int main(){
         for(int i = 0; i < point_len; i++)
             points[i].z = (points[i].z - 50)/50;
 
-        int final_points_len = zBuffer(points, point_len);
+        int final_points_len = zBuffer(points, point_len, WIDTH, HEIGHT);
         vec3 final_points[final_points_len];
         //transfer our data
         for(int i = 0; i < final_points_len; i++){

@@ -213,22 +213,6 @@ void mergesort(vec3 vertices[], int i, int j){
     merge(vertices, i, mid, mid+1, j);
 }
 
-//returns slope of z on either x or y depending on mode
-float zGradient(vec3* vert1, vec3* vert2, int mode){
-    
-    int dx = vert2->x - vert1->x;
-    int dy = vert2->y - vert1->y;
-    float dz = vert2->z - vert1->z; //can be negative, doesnt matter
-    
-    if(dz == 0)
-        return 0;
-
-    if(mode == 0){
-        return dz/dy;
-    }  
-    return dz/dx;
-
-}
 
 //matrix transformations
 

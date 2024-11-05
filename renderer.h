@@ -53,16 +53,22 @@ void zPrint(float z){
     increment j and then move i to k
    
 */
-int zBuffer(vec3 vert[], int n){
+int zBuffer(vec3 vert[], int n, int width, int height){
     sortVert(vert, n);
 
     int i = 0;
     int j = 0;
     for(int k = 1; k < n; k++){
-       if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
-            vert[j++] = vert[i];
-            i = k;
-       }
+        if(vert[k].x >= 0 && vert[k].x <= width * 1.5 && vert[k].y >= 0 && vert[k].y <= height * 1.5 && vert[k].z >= -1 && vert[k].z <= 1){
+
+        
+            if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
+                vert[j++] = vert[i];
+            
+                i = k;
+            }
+        }
+       
     }
     vert[j++] = vert[i]; 
     return j;
@@ -89,17 +95,19 @@ void render(vec3 vert[], int n){
     for(int i = 1; i < n; i++){
         //count number of lines needed for current vertex
         line = vert[i].y - vert[i-1].y;
-        if(line == 0) //curr vertex and prev vertex are in the same line
+        if(line == 0){ //curr vertex and prev vertex are in the same line
             space = vert[i].x - vert[i -1].x - 1;
-        else //curr vertex and prev vertex are NOT in the same lin
+        }
+        else {//curr vertex and prev vertex are NOT in the same lin
             space = vert[i].x - 1;
+        }
+
         for(int j = 0; j < line; j++){
             printf("\n");
         }
         for(int j = 0; j < space; j++){
             printf(" ");
         }
-
         zPrint(vert[i].z);
     }
     //print remaining spaces
