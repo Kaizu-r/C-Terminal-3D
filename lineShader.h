@@ -26,67 +26,97 @@
 void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     int dx = vert2->x - vert1->x;
     int dy = vert2->y - vert1->y;
+    int dz = vert2->z - vert1->z;
     int yi = 1;
+    int zi = 1;
 
-    float z = zGradient(vert1, vert2, 1);
+    //float z = zGradient(vert1, vert2, 1);
+
     
     //array for our valid points in the line
 
     if(dy < 0){
         yi = -1;
         dy = -dy;
-        z = -z;
+    }
+    if(dz < 0){
+        zi = -1;
+        dz = -dz;
     }
     int D = (dy << 1) - dx;
+    int Dz = (dz << 1) - dx;
     int y = vert1->y;
+    int z = vert1->z;
     for(int i = 0; i <= n; i++){
         points[i + offset].x = i + vert1->x;
         points[i + offset].y = y;
-        points[i + offset].z = i * z + vert1->z;
+        points[i + offset].z = z;
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
         }
         else
             D += dy << 1;
+        if(Dz > 0){
+            z += zi;
+            Dz += (dz - dx) << 1;
+        }
+        else{
+            Dz += dz << 1;
+        }
     }
 }
 
 void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     int dx = vert2->x - vert1->x;
     int dy = vert2->y - vert1->y;
+    int dz = vert2->z - vert1->z;
     int xi = 1;
+    int zi = 1;
 
+    
+    /*
     float z;
     //to check for vertical lines
     if(dx == 0)
         z = zGradient(vert1, vert2, 0);
     else
         z = zGradient(vert1, vert2, 1);
-
+    */
 
 
 
     if(dx < 0){
         xi = -1;
         dx = -dx;
-        z = -z;
+    }
+    if(dz < 0){
+        zi = -1;
+        dz = -dz;
     }
 
     int D = (dx << 1) - dy;
+    int Dz = (dx << 1) - dy;
     int x = vert1->x;
+    int z = vert1->z;
 
     //loop in reverse so it is sorted in ascending order
     for(int i = 0; i <= n; i++){
         points[i + offset].x = x;
         points[i + offset].y = i + vert1->y;
-        points[i + offset].z = i * z + vert1->z;
+        points[i + offset].z = z;
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
         }
         else
             D += dx << 1;
+        if(Dz > 0){
+            z += zi;
+            Dz += (dz - dy) << 1;
+        }
+        else
+            Dz += dz << 1;
     }
 
 

@@ -17,7 +17,7 @@ float rad(int deg){
 }
 
 void clear(){
-    printf("\e[1;1H\e[2J");
+    printf("\e[1;1H\e[2J\e[3J");
 }
 
 void wait(int waiting){
@@ -74,8 +74,8 @@ mat3 matMultiply(mat3 mat1, mat3 mat2){
 
 //Transformation matrix
 mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
-    mat3 transform = matMultiply(matz, maty);
-    transform = matMultiply(transform, matx);
+    mat3 transform = matMultiply(maty, matx);
+    transform = matMultiply(matz, transform);
     return transform;
 }
 
@@ -85,25 +85,42 @@ void model(vec3 vert[], int size, int degX, int degY, int degZ){
     float radY = rad(degY);
     float radZ = rad(degZ);
 
-    //get our rotation matrixes
-    mat3 rotX = rotateX(radX);
-    mat3 rotY = rotateY(radY);
-    mat3 rotZ = rotateZ(radZ);
 
     //get our transformation matrix
-    mat3 transform = matTransform(rotX, rotY, rotZ);
+    mat3 transform = {
+        cos(radY)*cos(radZ), sin(radX) * sin(radY) * cos(radZ) - cos(radX)*sin(radZ), cos(radX) * sin(radY) * cos(radZ) + sin(radX) * sin(radZ),
+        cos(radY) * sin(radZ), sin(radX) * sin(radY) * sin(radZ) + cos(radX) * cos(radZ), cos(radX) * sin(radY) * sin(radZ) - sin(radX) * cos(radZ),
+        -sin(radY), sin(radX) * cos(radY), cos(radX) * cos(radY)
+    };
 
     //transform each vertex
     int vertNum = size;
+    
+    vec3 temp;
+    
     for(int i = 0; i < vertNum; i++){
-        vert[i].x = vert[i].x * transform.matrix[0][0] + vert[i].y * transform.matrix[0][1] + vert[i].z * transform.matrix[0][2];
-        vert[i].y = vert[i].x * transform.matrix[1][0] + vert[i].y * transform.matrix[1][1] + vert[i].z * transform.matrix[1][2];
-        vert[i].z = vert[i].x * transform.matrix[2][0] + vert[i].y * transform.matrix[2][1] + vert[i].z * transform.matrix[2][2];
+        //store first to temp
+        temp.x = vert[i].x * transform.matrix[0][0] + vert[i].y * transform.matrix[0][1] + vert[i].z * transform.matrix[0][2];
+        temp.y = vert[i].x * transform.matrix[1][0] + vert[i].y * transform.matrix[1][1] + vert[i].z * transform.matrix[1][2];
+        temp.z = vert[i].x * transform.matrix[2][0] + vert[i].y * transform.matrix[2][1] + vert[i].z * transform.matrix[2][2];
+
+        vert[i] = temp;
     }
 }
 
-//test a simple projection 
+void perspective(vec3 vert[], int size, int near){
+    int d;
+    for(int i = 0; i < size; i++){
+        d = vert[i].z - near;
+        if(d != 0)
+            vert[i].z += 1/d;
+        //z remains unchanged
+    }
+}
+
+//creates the projected coordinates  
 void proj(vec3 vert[], int size, int far, int near, int fov){
+    
     float s = 1/(tan((fov/2) * (M_PI/180))); //this loooks really expensive
     mat3 projection = {
         s, 0, 0,
@@ -111,15 +128,54 @@ void proj(vec3 vert[], int size, int far, int near, int fov){
         0, 0, -(far/(far - near))
     };
 
+    //perspective(vert, size, near);
+
     for(int i = 0; i < size; i++){
-        vert[i].x = vert[i].x * projection.matrix[0][0];
-        vert[i].y = vert[i].y * projection.matrix[1][1];
-        vert[i].z = vert[i].z * projection.matrix[2][2] + (-far*near)/(far - near);
-    }
+        
+        //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
+        //
+        vert[i].x = vert[i].x * (projection.matrix[0][0] - vert[i].z);
+        vert[i].y = vert[i].y * (projection.matrix[1][1] -vert[i].z);
+    
+        //normalize z
+        //vert[i].z = (vert[i].z + 1)/2;
+        //vert[i].z = vert[i].z * projection.matrix[2][2] - (far*near)/(far - near);
+        //revert z back to -1 to 1
+        //vert[i].z = vert[i].z * 2 - 1;
+    } 
 
 }
 
 
+
+//translates the vertex coords. Essentially, we move the world
+void translation(vec3 vert[], int size, float x, float y, float z){
+    for(int i = 0; i < size; i++){
+        vert[i].x += x;
+        vert[i].y += y;
+        vert[i].z += z;
+    }
+}
+
+//setup the view matrix
+void view(vec3 vert[], int size){
+    for(int i = 0; i < size; i++){
+        if(vert[i].x != 0)
+            vert[i].x = 1/vert[i].x;
+        if(vert[i].y != 0)
+            vert[i].y = 1/vert[i].y;
+        if(vert[i].z != 0)
+            vert[i].z = 1/vert[i].z;
+    }
+}
+
+//setup the camera
+void camera(vec3 vert[], int size, float focal){
+    for(int i = 0; i < size; i++){
+        vert[i].x *= focal;
+        vert[i].y *= focal;
+    }
+}
 
 //custom merge sort algo
 void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
@@ -176,10 +232,12 @@ float zGradient(vec3* vert1, vec3* vert2, int mode){
     int dy = vert2->y - vert1->y;
     float dz = vert2->z - vert1->z; //can be negative, doesnt matter
     
-    if(dx == 0 || dy == 0 || dz == 0)
+    if(dz == 0)
         return 0;
-    if(mode == 0)
+
+    if(mode == 0){
         return dz/dy;
+    }  
     return dz/dx;
 
 }

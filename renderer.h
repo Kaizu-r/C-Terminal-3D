@@ -27,7 +27,7 @@ void zPrint(float z){
     else if(z <= -0.6)
         printf("&");
     else if(z <= -0.4)
-        printf("*");
+        printf("B");
     else if(z <= -0.2)
         printf("Z");
     else if(z <= 0.0)
