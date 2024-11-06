@@ -58,13 +58,14 @@ int zBuffer(vec3 vert[], int n, int width, int height){
 
     int i = 0;
     int j = 0;
-    for(int k = 1; k < n; k++){      
-        if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
-            vert[j] = vert[k];
-            i = k;
-            j++;
+    for(int k = 1; k < n; k++){
+        if(vert[k].x >= 0 && vert[k].x <= width * 2){     
+            if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
+                vert[j] = vert[k];
+                i = k;
+                j++;
+            }
         }
-        
        
     }
     vert[j++] = vert[i]; 

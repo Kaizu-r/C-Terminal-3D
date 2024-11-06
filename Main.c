@@ -5,8 +5,8 @@
 #include "lineShader.h"
 #include "utils.h"
 
-#define WIDTH 80
-#define HEIGHT 35
+#define WIDTH 70
+#define HEIGHT 30
 #define FPS 12
 
 int main(){
@@ -171,7 +171,7 @@ int main(){
 
         //temporary scale our points
         for(int i = 0; i < n; i++){
-            terminal[i].z = terminal[i].z * 50 + 50;
+            terminal[i].z = terminal[i].z * 20 + 20;
         }
 
         //see if our modified lines are working properly
@@ -186,7 +186,7 @@ int main(){
 
         //normalize our zs
         for(int i = 0; i < point_len; i++)
-            points[i].z = (points[i].z - 50)/50;
+            points[i].z = (points[i].z - 20)/20;
 
         int final_points_len = zBuffer(points, point_len, WIDTH, HEIGHT);
         vec3 final_points[final_points_len];

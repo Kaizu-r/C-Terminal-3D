@@ -96,7 +96,7 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     }
 
     int D = (dx << 1) - dy;
-    int Dz = (dx << 1) - dy;
+    int Dz = (dz << 1) - dy;
     int x = vert1->x;
     int z = vert1->z;
 
