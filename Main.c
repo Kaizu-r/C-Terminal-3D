@@ -10,6 +10,7 @@
 #define FPS 12
 
 int main(){
+    
     vec3 vertices[] = {
         -0.35, 0.35, -0.35,    //front upper left
         -0.35, -0.35, -0.35,   //front lower left
@@ -97,6 +98,8 @@ int main(){
     vec3 viewM[n];
     vec3 projection[n];
     vec3 cam[n];
+
+    char str[WIDTH * 2 * HEIGHT + 1];
     while(1){
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
@@ -195,9 +198,11 @@ int main(){
             final_points[i] = points[i];
         }
 
-        //test our new points
+        //try to use a string for printing
+        
+        strcpy(str, "");
         //attempt to render
-        render(final_points, final_points_len, WIDTH, HEIGHT, '-');
+        render(final_points, final_points_len, WIDTH, HEIGHT, str);
         wait(FPS);
         clear();
     }

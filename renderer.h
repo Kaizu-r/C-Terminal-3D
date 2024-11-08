@@ -2,6 +2,7 @@
 #define RENDERER
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "coords.h"
 #include "utils.h"
@@ -20,28 +21,30 @@ void sortVert(vec3 vert[], int n){
     mergesort(vert, 0, n-1);
 }
 
-void zPrint(float z){
+void zPrint(float z, char* str){
+
     //textures sheesh
     if(z <= -0.8)
-        printf("@");
+        strcat(str, "@");
     else if(z <= -0.6)
-        printf("&");
+        strcat(str, "&");
     else if(z <= -0.4)
-        printf("B");
+        strcat(str, "B");
     else if(z <= -0.2)
-        printf("Z");
+        strcat(str, "Z");
     else if(z <= 0.0)
-        printf("Q");
+        strcat(str, "Q");
     else if(z <= 0.2)
-        printf("X");
+        strcat(str, "X");
     else if(z <= 0.4)
-        printf("|");
+        strcat(str, "|");
     else if(z <= 0.6)
-        printf("<");
+        strcat(str, "<");
     else if(z <= 0.8)
-        printf(":");
+       strcat(str, ":");
     else
-        printf(".");
+        strcat(str, ".");
+
 }
 
 //store only valid points in z
@@ -74,7 +77,7 @@ int zBuffer(vec3 vert[], int n, int width, int height){
 
 
 //print our vertices
-void render(vec3 vert[], int n, int width, int height, char bg){
+void render(vec3 vert[], int n, int width, int height, char str[]){
     int line = 0;
     int space = 0;
 
@@ -83,13 +86,13 @@ void render(vec3 vert[], int n, int width, int height, char bg){
     space = vert[0].x - 1;
 
     for(int i = 0; i < line; i++)
-        printf("\n");
+        strcat(str, "\n");
     for(int i = 0; i < space; i++)
-        printf(" ");
+        strcat(str, " ");
     
     //do the real printing
     if(vert[0].x >= 0 && vert[0].x <= width * 1.5 )
-        zPrint(vert[0].z);
+       zPrint(vert[0].z, str);
 
     for(int i = 1; i < n; i++){
         //count number of lines needed for current vertex
@@ -105,17 +108,19 @@ void render(vec3 vert[], int n, int width, int height, char bg){
         }
 
         for(int j = 0; j < line; j++){
-            printf("\n");
+            strcat(str, "\n");
         }
         for(int j = 0; j < space; j++){
-            printf(" ");
+            strcat(str, " ");
         }
-        if(vert[0].x >= 0 && vert[0].x <= width << 1)
-            zPrint(vert[0].z);
+        if(vert[i].x >= 0 && vert[i].x <= width << 1)
+            zPrint(vert[i].z, str);
     };  
     for(int i = 0; i <= vert[n-1].y; i++){
-        printf("\n");
+       strcat(str, "\n");
     }
+    strcat(str, "\0");
+    printf(str);
 }
 
 #endif
