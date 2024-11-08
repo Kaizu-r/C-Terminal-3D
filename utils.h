@@ -146,15 +146,18 @@ void translation(vec3 vert[], int size, float x, float y, float z){
 
 //setup the view matrix
 void view(vec3 vert[], int size, float x, float y, float z, int rotX, int rotY, int rotZ){
+   
+
+    model(vert, size, rotX, rotY, rotZ);
     for(int i = 0; i < size; i++){
         //transforms it to view space
         vert[i].x -= x;
         vert[i].y -= y;
         vert[i].z -= z;
     }
-
+    //model(vert, size, rotX, rotY, rotZ);
+ 
     //rotate the view matrix
-    model(vert, size, rotX, rotY, rotZ);
 }
 
 //setup the camera

@@ -40,7 +40,7 @@ void zPrint(float z){
         printf("<");
     else if(z <= 0.8)
         printf(":");
-    else if(z <= 1.0)
+    else
         printf(".");
 }
 

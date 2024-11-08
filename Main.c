@@ -50,8 +50,8 @@ int main(){
     };
 
     //setup rotation here
-    int xRot = 0;
-    int yRot = 10;
+    int xRot = 10;
+    int yRot = 0;
     int zRot = 0;
 
     //set up initial rotation
@@ -61,7 +61,7 @@ int main(){
 
 
     //setup translation here
-    float xTrans = 0;
+    float xTrans = 0.5;
     float yTrans = 0;
     float zTrans = 0;
 
@@ -71,8 +71,8 @@ int main(){
     float camX = 0;
     float camY = 0.5;
     float camZ = 0.5;
-    int camrX = 10;
-    int camrY = 0;
+    int camrX = 0;
+    int camrY = 10;
     int camrZ = 0;
     float focal = 1;
 
@@ -153,7 +153,7 @@ int main(){
         for(int i = 0; i < n; i++){
             projection[i] = viewM[i];
         }
-        proj(projection, n, 1, 0, fov);
+        proj(projection, n, 2, 0, fov);
 
         for(int i = 0; i < n; i++){
             cam[i] = projection[i];
