@@ -5,54 +5,32 @@
 #include "lineShader.h"
 #include "utils.h"
 
-#define WIDTH 70
-#define HEIGHT 30
+#define WIDTH 100
+#define HEIGHT 40
 #define FPS 12
 
 int main(){
     
     vec3 vertices[] = {
-        -0.35, 0.35, -0.35,    //front upper left
-        -0.35, -0.35, -0.35,   //front lower left
-        0.35, 0.35, -0.35,     //front upper right
-        0.35, -0.35, -0.35,    //front lower right
-        -0.35, 0.35, 0.35,    //back upper left
-        -0.35, -0.35, 0.35,   //back lower left
-        0.35, 0.35, 0.35,     //back upper right
-        0.35, -0.35, 0.35,    //back lower right
-        
+       0,0.5,0,
+       -0.5,0,0,
+       0.5,0,0,
+       0,0,-0.5,
+       0,0,0.5
 
- 
     };
     //left to right in terms of x
     int indices[] = {
-    
-    //front
-        0, 1, 2,
-        1, 2, 3,
-    //back
-        4, 5, 6,
-        5, 6, 7,
-    //left
-        0, 1, 4,
-        1, 4, 5,
-    //right
-        2, 3, 6,
-        3, 6, 7,
-    //top
-        0, 2, 4,
-        2, 4, 6,
-    //bottom
-        1, 3, 5,
-        3, 5, 7
-
-    
+       0,1,2,
+       0,3,4,
+       1,2,3,
+       2,4,1
 
     };
 
     //setup rotation here
-    int xRot = 10;
-    int yRot = 0;
+    int xRot = 0;
+    int yRot = 10;
     int zRot = 0;
 
     //set up initial rotation
@@ -62,23 +40,24 @@ int main(){
 
 
     //setup translation here
-    float xTrans = 0.5;
+    float xTrans = 0;
     float yTrans = 0;
     float zTrans = 0;
 
     
 
     //setup camera here
+
     float camX = 0;
-    float camY = 0.5;
-    float camZ = 0.5;
-    int camrX = 0;
+    float camY = -0.2;
+    float camZ = -0.2;
+    int camrX = 20;
     int camrY = 10;
     int camrZ = 0;
     float focal = 1;
 
     //setup fov here
-    float fov= 60;
+    float fov= 90;
 
 
     int vX = 0;
@@ -99,8 +78,11 @@ int main(){
     vec3 projection[n];
     vec3 cam[n];
 
-    char str[WIDTH * 2 * HEIGHT + 1];
+
+
     while(1){
+
+
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
             modVert[i] = vertices[i];
@@ -110,7 +92,7 @@ int main(){
         xR += xRot;
         yR += yRot;
         zR += zRot;
-        vX += camrX;
+        vX = camrX;
         vY += camrY;
         vZ += camrZ;
         tX = camX;
@@ -160,7 +142,7 @@ int main(){
 
         for(int i = 0; i < n; i++){
             cam[i] = projection[i];
-            printf("\t%.3f\t%.3f\t%.3f\n", cam[i].x, cam[i].y, cam[i].z);
+           
         }
         camera(cam, n, focal);
 
@@ -200,9 +182,9 @@ int main(){
 
         //try to use a string for printing
         
-        strcpy(str, "");
+        
         //attempt to render
-        render(final_points, final_points_len, WIDTH, HEIGHT, str);
+        render(final_points, final_points_len, WIDTH, HEIGHT);
         wait(FPS);
         clear();
     }

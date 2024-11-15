@@ -6,6 +6,7 @@
 
 #include "coords.h"
 #include "utils.h"
+#include "vertex.h"
 
 
 /*
@@ -21,29 +22,29 @@ void sortVert(vec3 vert[], int n){
     mergesort(vert, 0, n-1);
 }
 
-void zPrint(float z, char* str){
+void zPrint(float z){
 
     //textures sheesh
     if(z <= -0.8)
-        strcat(str, "@");
+        printf("@");
     else if(z <= -0.6)
-        strcat(str, "&");
+        printf("&");
     else if(z <= -0.4)
-        strcat(str, "B");
+        printf("B");
     else if(z <= -0.2)
-        strcat(str, "Z");
+        printf("Z");
     else if(z <= 0.0)
-        strcat(str, "Q");
+        printf("Q");
     else if(z <= 0.2)
-        strcat(str, "X");
+        printf("X");
     else if(z <= 0.4)
-        strcat(str, "|");
+        printf("|");
     else if(z <= 0.6)
-        strcat(str, "<");
+        printf("<");
     else if(z <= 0.8)
-       strcat(str, ":");
+       printf(":");
     else
-        strcat(str, ".");
+        printf(".");
 
 }
 
@@ -61,8 +62,8 @@ int zBuffer(vec3 vert[], int n, int width, int height){
 
     int i = 0;
     int j = 0;
-    for(int k = 1; k < n; k++){
-        if(vert[k].x >= 0 && vert[k].x <= width * 2){     
+    for(int k = 0; k < n; k++){
+        if(vert[k].x > 0 && vert[k].x < width * 2 && vert[k].y > 0 && vert[k].y < height && vert[k].z > 0 && vert[k].z <= 2){     
             if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
                 vert[j] = vert[k];
                 i = k;
@@ -77,7 +78,7 @@ int zBuffer(vec3 vert[], int n, int width, int height){
 
 
 //print our vertices
-void render(vec3 vert[], int n, int width, int height, char str[]){
+void render(vec3 vert[], int n, int width, int height){
     int line = 0;
     int space = 0;
 
@@ -86,13 +87,13 @@ void render(vec3 vert[], int n, int width, int height, char str[]){
     space = vert[0].x - 1;
 
     for(int i = 0; i < line; i++)
-        strcat(str, "\n");
+        printf("\n");
     for(int i = 0; i < space; i++)
-        strcat(str, " ");
+        printf(" ");
     
     //do the real printing
     if(vert[0].x >= 0 && vert[0].x <= width * 1.5 )
-       zPrint(vert[0].z, str);
+       zPrint(vert[0].z);
 
     for(int i = 1; i < n; i++){
         //count number of lines needed for current vertex
@@ -108,19 +109,17 @@ void render(vec3 vert[], int n, int width, int height, char str[]){
         }
 
         for(int j = 0; j < line; j++){
-            strcat(str, "\n");
+            printf("\n");
         }
         for(int j = 0; j < space; j++){
-            strcat(str, " ");
+           printf(" ");
         }
         if(vert[i].x >= 0 && vert[i].x <= width << 1)
-            zPrint(vert[i].z, str);
+            zPrint(vert[i].z);
     };  
     for(int i = 0; i <= vert[n-1].y; i++){
-       strcat(str, "\n");
+       printf("\n");
     }
-    strcat(str, "\0");
-    printf(str);
 }
 
 #endif

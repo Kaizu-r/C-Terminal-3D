@@ -111,20 +111,18 @@ void model(vec3 vert[], int size, int degX, int degY, int degZ){
 //creates the projected coordinates  
 void proj(vec3 vert[], int size, int far, int near, int fov){
 
-    float s = 1/(tan((fov/2) * (M_PI/180))); //this loooks really expensive
-    mat3 projection = {
-        s, 0, 0,
-        0, s, 0,
-        0, 0, -(far/(far - near))
-    };
+    float s = 1/tan((fov/4) * (M_PI/180));
 
 
     for(int i = 0; i < size; i++){
         
         //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
         //
-        vert[i].x = vert[i].x * (projection.matrix[0][0] - vert[i].z);
-        vert[i].y = vert[i].y * (projection.matrix[1][1] - vert[i].z);
+       float sx = vert[i].x * (s - vert[i].z);
+       float sy = vert[i].y * (s - vert[i].z);
+
+       vert[i].x = sx;
+       vert[i].y = sy;
     
        
         //vert[i].z = vert[i].z * projection.matrix[2][2] - (far*near)/(far - near);
@@ -147,15 +145,19 @@ void translation(vec3 vert[], int size, float x, float y, float z){
 //setup the view matrix
 void view(vec3 vert[], int size, float x, float y, float z, int rotX, int rotY, int rotZ){
    
-
-    model(vert, size, rotX, rotY, rotZ);
-    for(int i = 0; i < size; i++){
-        //transforms it to view space
-        vert[i].x -= x;
-        vert[i].y -= y;
-        vert[i].z -= z;
-    }
+    //default cam pos 
+    float camx = 0 + x;
+    float camy = 0 + x;
+    float camz = -1 + z;
     //model(vert, size, rotX, rotY, rotZ);
+    for(int i = 0; i < size; i++){
+        //transforms it to view space by subtracting from camera location
+        vert[i].x -= camx;
+        vert[i].y -= camy;
+        vert[i].z -= camz;
+        
+    }
+    model(vert, size, rotX, rotY, rotZ);
  
     //rotate the view matrix
 }
