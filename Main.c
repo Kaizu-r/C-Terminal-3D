@@ -30,7 +30,7 @@ int main(){
 
     //setup rotation here
     int xRot = 0;
-    int yRot = 10;
+    int yRot = 0;
     int zRot = 0;
 
     //set up initial rotation
