@@ -12,30 +12,35 @@
 int main(){
     
     vec3 vertices[] = {
-       0,0.5,0,
-       -0.5,0,0,
-       0.5,0,0,
-       0,0,-0.5,
-       0,0,0.5
+       0,0.5,0, //top
+       -0.5,0,0,    //left
+       0.5,0,0, //right
+       0,0,-0.5,    //front
+       0,0,0.5, //back
+       0,-0.5,0 //bottom
 
     };
     //left to right in terms of x
     int indices[] = {
-       0,1,2,
-       0,3,4,
-       1,2,3,
-       2,4,1
+      0,1,3,
+      0,1,4,
+      0,4,2,
+      0,2,3,
+      5,1,3,
+      5,1,4,
+      5,4,2,
+      5,2,3
 
     };
 
     //setup rotation here
-    int xRot = 0;
+    int xRot = 10;
     int yRot = 0;
     int zRot = 0;
 
     //set up initial rotation
     int inX = 0;
-    int inY = 0;
+    int inY = 10;
     int inZ = 0;
 
 
@@ -49,11 +54,13 @@ int main(){
     //setup camera here
 
     float camX = 0;
-    float camY = -0.2;
-    float camZ = -0.2;
-    int camrX = 20;
+    float camY = -0.4;
+    float camZ = 0;
+    //camera rotation
+    int camrX = -20;
     int camrY = 10;
     int camrZ = 0;
+    //focal lenght. greater values will zoom it in
     float focal = 1;
 
     //setup fov here
@@ -82,6 +89,8 @@ int main(){
 
     while(1){
 
+        //initialize the screen
+        char* screen = (char*) malloc(sizeof(char) * WIDTH * 1.5 * HEIGHT + sizeof(char));
 
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
@@ -118,13 +127,13 @@ int main(){
         printf("%d\n", xR);
         printf("%d\n", yR);
         printf("%d\n", zR);
-        //translate hte vertex
-        //transform
-        model(modVert, n, xR, yR, zR);
+                
+        //rotate initially, then rotate based on the incrementing rotation
+        model(modVert, n, xR + inX, yR + inY, zR + inZ);
 
 
         translation(modVert, n, xTrans, yTrans, zTrans);
-        //translation(modVert, n, xTrans, yTrans, zTrans);
+
         //setup our view
         for(int i = 0; i < n; i++){
             viewM[i] = modVert[i];
@@ -133,17 +142,17 @@ int main(){
        //transform based on view space
         view(viewM, n, tX, tY, tZ, vX, vY, vZ);
     
-        
-
         for(int i = 0; i < n; i++){
             projection[i] = viewM[i];
         }
-        proj(projection, n, 2, 0, fov);
+        //transform to projection space
+        proj(projection, n, 2, 0, fov, WIDTH, HEIGHT);
 
         for(int i = 0; i < n; i++){
             cam[i] = projection[i];
            
         }
+        //transform based on focal length
         camera(cam, n, focal);
 
         //convert 
@@ -180,13 +189,13 @@ int main(){
             final_points[i] = points[i];
         }
 
-        //try to use a string for printing
         
         
         //attempt to render
-        render(final_points, final_points_len, WIDTH, HEIGHT);
+        render(final_points, final_points_len, WIDTH, HEIGHT, screen);
         wait(FPS);
         clear();
+        free(screen);
     }
     
 
