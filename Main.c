@@ -5,7 +5,7 @@
 #include "lineShader.h"
 #include "utils.h"
 
-#define WIDTH 100
+#define WIDTH 80
 #define HEIGHT 40
 #define FPS 12
 
@@ -55,10 +55,10 @@ int main(){
 
     float camX = 0;
     float camY = -0.4;
-    float camZ = 0;
+    float camZ = -0.2;
     //camera rotation
-    int camrX = -20;
-    int camrY = 10;
+    int camrX = 10;
+    int camrY = 0;
     int camrZ = 0;
     //focal lenght. greater values will zoom it in
     float focal = 1;

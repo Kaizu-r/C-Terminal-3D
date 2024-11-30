@@ -151,17 +151,12 @@ void view(vec3 vert[], int size, float x, float y, float z, int rotX, int rotY, 
     float camx = x;
     float camy = x;
     float camz = z;
-
     for(int i = 0; i < size; i++){
         //transforms it to view space by subtracting from camera location
         vert[i].x -= camx;
         vert[i].y -= camy;
         vert[i].z -= camz;
-        
     }
-    model(vert, size, rotX, rotY, rotZ);
- 
-    //rotate the view matrix
 }
 
 //setup the camera
