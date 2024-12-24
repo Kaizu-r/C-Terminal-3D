@@ -78,7 +78,7 @@ int zBuffer(vec3 vert[], int n, int width, int height){
 
 
 //print our vertices
-void render(vec3 vert[], int n, int width, int height, char* screen){
+void render(vec3 vert[], int n, int width, int height, char screen[]){
     int line = 0;
     int space = 0;
     int k = 0;
