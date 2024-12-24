@@ -17,7 +17,7 @@
         
     }
 */
-//rasterizer per line
+//rasterizer per shape
 
 
 

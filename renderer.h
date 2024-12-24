@@ -22,29 +22,29 @@ void sortVert(vec3 vert[], int n){
     mergesort(vert, 0, n-1);
 }
 
-void zPrint(float z){
+char zPrint(float z){
 
     //textures sheesh
     if(z <= -0.8)
-        printf("@");
+        return '@';
     else if(z <= -0.6)
-        printf("&");
+        return '&';
     else if(z <= -0.4)
-        printf("B");
+        return 'B';
     else if(z <= -0.2)
-        printf("Z");
+        return 'Z';
     else if(z <= 0.0)
-        printf("Q");
+        return 'Q';
     else if(z <= 0.2)
-        printf("X");
+        return 'X';
     else if(z <= 0.4)
-        printf("|");
+        return '|';
     else if(z <= 0.6)
-        printf("<");
+        return '<';
     else if(z <= 0.8)
-       printf(":");
+       return ':';
     else
-        printf(".");
+        return '.';
 
 }
 
@@ -63,7 +63,7 @@ int zBuffer(vec3 vert[], int n, int width, int height){
     int i = 0;
     int j = 0;
     for(int k = 0; k < n; k++){
-        if(vert[k].x > 0 && vert[k].x < width * 2 && vert[k].y > 0 && vert[k].y < height && vert[k].z > 0 && vert[k].z <= 2){     
+        if(vert[k].x > 0 && vert[k].x < width * 2 && vert[k].y > 0 && vert[k].y < height && vert[k].z > 0.2 && vert[k].z <= 2){     
             if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
                 vert[j] = vert[k];
                 i = k;
@@ -78,48 +78,57 @@ int zBuffer(vec3 vert[], int n, int width, int height){
 
 
 //print our vertices
-void render(vec3 vert[], int n, int width, int height){
+void render(vec3 vert[], int n, int width, int height, char screen[]){
     int line = 0;
     int space = 0;
+    int k = 0;
 
     //start the printing
     line = vert[0].y;
     space = vert[0].x - 1;
 
-    for(int i = 0; i < line; i++)
-        printf("\n");
-    for(int i = 0; i < space; i++)
-        printf(" ");
-    
+    for(int i = 0; i < line; i++){
+        screen[k++] = '\n';
+    }
+    for(int i = 0; i < space; i++){
+        screen[k++] = ' ';
+    }
     //do the real printing
     if(vert[0].x >= 0 && vert[0].x <= width * 1.5 )
-       zPrint(vert[0].z);
+    {
+        screen[k++] = zPrint(vert[0].z);
+    }
+        
 
     for(int i = 1; i < n; i++){
         //count number of lines needed for current vertex
         //skip a vertex if its out of bounds
-        while(vert[i -1].x < 0)
-            i++;
         line = vert[i].y - vert[i-1].y;
         if(line == 0){ //curr vertex and prev vertex are in the same line
-            space = vert[i].x - vert[i -1].x - 1;
+            space = vert[i].x - vert[i-1].x - 1;
         }
-        else {//curr vertex and prev vertex are NOT in the same lin
+        else{//curr vertex and prev vertex are NOT in the same line
             space = vert[i].x - 1;
         }
 
         for(int j = 0; j < line; j++){
-            printf("\n");
+            screen[k++] = '\n';
         }
         for(int j = 0; j < space; j++){
-           printf(" ");
+            screen[k++] = ' ';
         }
-        if(vert[i].x >= 0 && vert[i].x <= width << 1)
-            zPrint(vert[i].z);
+        if(vert[i].x >= 0 && vert[i].x <= width << 1){
+            
+            screen[k++] = zPrint(vert[i].z);
+        }
+             
     };  
     for(int i = 0; i <= vert[n-1].y; i++){
-       printf("\n");
+        //printf("\n");
+        screen[k++] = '\n';
     }
+    screen[k++] = '\0';
+    printf("%s", screen);
 }
 
 #endif
