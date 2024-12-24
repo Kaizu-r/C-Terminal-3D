@@ -12,30 +12,48 @@
 int main(){
     
     vec3 vertices[] = {
-       0,0.5,0, //top
-       -0.5,0,0,    //left
-       0.5,0,0, //right
-       0,0,-0.5,    //front
-       0,0,0.5, //back
-       0,-0.5,0 //bottom
+      //tips
+      0,0.75,0,
+      -0.5, 0.0, 0,
+      0.5, 0.0, 0,
+      -0.35, -0.7,0,
+      0.35, -0.7, 0,
+
+      //front pentagon
+      -0.1, 0.2, -0.2,
+      0.1, 0.2, -0.2,
+      -0.2, -0.2, -0.2,
+      0.2, -0.2, -0.2,
+      0, -0.4, -0.2,
+
+     //back pentagon
+      -0.1, 0.2, 0.2,
+      0.1, 0.2, 0.2,
+      -0.2, -0.2, 0.2,
+      0.2, -0.2, 0.2,
+      0, -0.4, 0.2
+
 
     };
     //left to right in terms of x
     int indices[] = {
-      0,1,3,
-      0,1,4,
-      0,4,2,
-      0,2,3,
-      5,1,3,
-      5,1,4,
-      5,4,2,
-      5,2,3
+      0,5, 6,
+      0, 10, 11,
+      1, 5, 7,
+      1, 10, 12,
+      2, 6, 8,
+      2, 11, 13,
+      3, 7, 9,
+      3, 12, 14,
+      4, 8, 9,
+      4, 13, 14
+    
 
     };
 
     //setup rotation here
-    int xRot = 10;
-    int yRot = 0;
+    int xRot = 0;
+    int yRot = 10;
     int zRot = 0;
 
     //set up initial rotation
@@ -90,7 +108,7 @@ int main(){
     while(1){
 
         //initialize the screen
-        char* screen = (char*) malloc(sizeof(char) * WIDTH * 1.5 * HEIGHT + sizeof(char));
+        char screen[4000];
 
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
@@ -195,7 +213,7 @@ int main(){
         render(final_points, final_points_len, WIDTH, HEIGHT, screen);
         wait(FPS);
         clear();
-        free(screen);
+        //free(screen);
     }
     
 
