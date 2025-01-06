@@ -17,7 +17,7 @@ float rad(int deg){
 }
 
 void clear(){
-    printf("\e[1;1H\e[2J\e[3J");
+    printf("\e[1;1H\e[1J\e[2J\e[3J");
 }
 
 void wait(int waiting){
@@ -118,10 +118,10 @@ void proj(vec3 vert[], int size, int far, int near, int fov, int WIDTH, int HEIG
         
         //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
         // 
-        vert[i].z += 0.75;
-        float sz = vert[i].z * (far/(far-near)) - (far*near/(far - near));
-        float sx = vert[i].x * (s) * a / vert[i].z;
-        float sy = vert[i].y * (s) / vert[i].z;
+
+        float sz = vert[i].z * far/(far-near)- (far*near/(far - near));
+        float sx = vert[i].x * (s) * a;
+        float sy = vert[i].y * (s);
 
         vert[i].x = sx;
         vert[i].y = sy;
@@ -141,6 +141,14 @@ void translation(vec3 vert[], int size, float x, float y, float z){
         vert[i].x -= x;
         vert[i].y -= y;
         vert[i].z -= z;
+    }
+}
+
+void scale(vec3 vert[], int size, float factor){
+    for(int i = 0; i < size; i++){
+        vert[i].x *= factor;
+        vert[i].y *= factor;
+        vert[i].z = vert[i].z * factor;;
     }
 }
 
