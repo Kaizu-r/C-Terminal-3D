@@ -2,51 +2,43 @@
 #include <stdlib.h>
 
 #include "renderer.h"
-#include "lineShader.h"
+#include "shader.h"
 #include "utils.h"
 
-#define WIDTH 60
-#define HEIGHT 30
+#define WIDTH 80
+#define HEIGHT 40
 #define FPS 12
 
 int main(){
     
     vec3 vertices[] = {
-      //tips
-      0,0.75,0,
-      -0.5, 0.0, 0,
-      0.5, 0.0, 0,
-      -0.35, -0.7,0,
-      0.35, -0.7, 0,
+    //front
+    -0.5, 0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    0.5, 0.5, -0.5,
+    0.5, -0.5, -0.5,
+    //back
+    -0.5, 0.5, 0.5,
+    -0.5, -0.5, 0.5,
+    0.5, 0.5, 0.5,
+    0.5, -0.5, 0.5,
 
-      //front pentagon
-      -0.1, 0.2, -0.2,
-      0.1, 0.2, -0.2,
-      -0.2, -0.2, -0.2,
-      0.2, -0.2, -0.2,
-      0, -0.4, -0.2,
-
-     //back pentagon
-      -0.1, 0.2, 0.2,
-      0.1, 0.2, 0.2,
-      -0.2, -0.2, 0.2,
-      0.2, -0.2, 0.2,
-      0, -0.4, 0.2
-
+        
 
     };
     //left to right in terms of x
     int indices[] = {
-      0,5, 6,
-      0, 10, 11,
-      1, 5, 7,
-      1, 10, 12,
-      2, 6, 8,
-      2, 11, 13,
-      3, 7, 9,
-      3, 12, 14,
-      4, 8, 9,
-      4, 13, 14
+        0,1,2,
+        1,2,3,
+        4,5,6,
+        5,6,7,
+        0,1,4,
+        4,5,1,
+        2,3,6,
+        6,7,3,
+        0,2,4,
+        4,2,6,
+
     
 
     };
@@ -70,9 +62,11 @@ int main(){
     
 
     //setup camera here
+    float far = 70;
+    float near = 1;
 
     float camX = 0;
-    float camY = -0.4;
+    float camY = 10;
     float camZ = 0;
     //camera rotation
     int camrX = 10;
@@ -105,7 +99,8 @@ int main(){
 
     //initialize the screen
     char screen[HEIGHT * WIDTH + 10];
-
+    int point_len = HEIGHT * WIDTH * 1.5;
+    vec3 *points;
     while(1){
 
 
@@ -146,7 +141,7 @@ int main(){
         //printf("%d\n", zR);
                 
         //rotate initially, then rotate based on the incrementing rotation
-        scale(modVert, n, 20);
+        scale(modVert, n, 25);
         model(modVert, n, xR + inX, yR + inY, zR + inZ);
 
 
@@ -164,7 +159,7 @@ int main(){
             projection[i] = viewM[i];
         }
         //transform to projection space
-        proj(projection, n, 10, 0, fov, WIDTH, HEIGHT);
+        proj(projection, n, far, near, fov, WIDTH, HEIGHT);
 
         for(int i = 0; i < n; i++){
             cam[i] = projection[i];
@@ -179,35 +174,38 @@ int main(){
             terminal[i] = toTerminal(&cam[i], WIDTH, HEIGHT);
         }
 
-        int point_len = pointsLen(terminal, indices, 3, sizeof(indices)/sizeof(int));
-
+        printf("%f %f %f\n", terminal[0].z, terminal[1].z, terminal[2].z);
+        //number of points per line total
+        //int point_len = pointsLen(terminal, indices, 3, sizeof(indices)/sizeof(int));
         //temporary scale our point
 
         //see if our modified lines are working properly
-        vec3 points[point_len];
-        
+        points = malloc(point_len * sizeof(vec3));
         int offset = 0;
         int stride = 3;
         int shapes = (sizeof(indices)/sizeof(int))/stride;
         for(int i = 0; i < shapes; i++){
             makeShape(terminal, indices, points, stride, i, &offset);
         }
-
+        printf("%f %f %f\n", points[0].z, points[1].z, points[2].z);
 
         int final_points_len = zBuffer(points, point_len, WIDTH, HEIGHT);
         vec3 final_points[final_points_len];
         //transfer our data
         for(int i = 0; i < final_points_len; i++){
             final_points[i] = points[i];
+            final_points[i].z =final_points[i].z *  1/(far - near) - (near)/(far - near); 
         }
 
-        
+        printf("%f %f %f\n", final_points[0].z, final_points[1].z, final_points[2].z);
         
         //attempt to render
         render(final_points, final_points_len, WIDTH, HEIGHT, screen);
         wait(FPS);
         clear();
         //free(screen);
+
+
     }
     
 
