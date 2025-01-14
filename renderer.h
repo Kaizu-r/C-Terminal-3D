@@ -27,21 +27,21 @@ char zPrint(float z){
     //textures sheesh
     if(z <= -0.8)
         return '@';
-    else if(z <= -0.6)
+    else if(z < -0.6)
         return '&';
-    else if(z <= -0.4)
+    else if(z < -0.4)
         return 'B';
-    else if(z <= -0.2)
+    else if(z < -0.2)
         return 'Z';
-    else if(z <= 0.0)
+    else if(z < 0.0)
         return 'Q';
-    else if(z <= 0.2)
+    else if(z < 0.2)
         return 'X';
-    else if(z <= 0.4)
+    else if(z < 0.4)
         return '|';
-    else if(z <= 0.6)
+    else if(z < 0.6)
         return '<';
-    else if(z <= 0.8)
+    else if(z < 0.8)
        return ':';
     else
         return '.';
