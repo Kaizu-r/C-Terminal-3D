@@ -119,9 +119,9 @@ void proj(vec3 vert[], int size, int far, int near, int fov, int WIDTH, int HEIG
         //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
         // 
 
-        float sz = vert[i].z * far/(far-near)- (far*near/(far - near));
-        float sx = vert[i].x * (s) * a;
-        float sy = vert[i].y * (s);
+        float sz = vert[i].z * far/(near - far)- (far*near/(near - far));
+        float sx = (vert[i].x * (s) * a);
+        float sy = (vert[i].y * (s)) ;
 
         vert[i].x = sx;
         vert[i].y = sy;
