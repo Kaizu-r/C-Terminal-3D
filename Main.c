@@ -44,20 +44,14 @@ int main(){
     };
 
     //setup rotation here
-    int xRot = 0;
-    int yRot = 10;
-    int zRot = 0;
+    vec3 model_rotation = {10,0,0};
 
     //set up initial rotation
-    int inX = 0;
-    int inY = 10;
-    int inZ = 0;
+    vec3 model_init_rotation = {0, 30, 0};
 
 
     //setup translation here
-    float xTrans = 0;
-    float yTrans = 0;
-    float zTrans = 0;
+    vec3 model_translation = {0, 0, 0};
 
     
 
@@ -65,13 +59,9 @@ int main(){
     float far = 70;
     float near = 1;
 
-    float camX = 0;
-    float camY = 10;
-    float camZ = 0;
+    vec3 camera_trans = {0, 0, 0};
     //camera rotation
-    int camrX = 10;
-    int camrY = 0;
-    int camrZ = 0;
+    vec3 camera_rot = {0,0,0};
     //focal lenght. greater values will zoom it in
     float focal = 1;
 
@@ -79,15 +69,9 @@ int main(){
     float fov= 90;
 
 
-    int vX = 0;
-    int vY = 0;
-    int vZ = 0;
-    float tX = 0;
-    float tY = 0;
-    float tZ = 0;
-    int xR = 0;
-    int yR = 0;
-    int zR = 0;
+    vec3 view_rotation = {0, 0, 0};
+    vec3 view_translation = {0, 0, 0};
+    vec3 total_rotation = {0,0,0};
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 pixels[n];
     vec3 terminal[n];
@@ -110,42 +94,43 @@ int main(){
         }
 
         //edit if needed
-        xR += xRot;
-        yR += yRot;
-        zR += zRot;
-        vX = camrX;
-        vY += camrY;
-        vZ += camrZ;
-        tX = camX;
-        tY = camY;
-        tZ = camZ;
+        total_rotation.x += model_rotation.x;
+        total_rotation.y += model_rotation.y;
+        total_rotation.z += model_rotation.z;
+        view_rotation.x += camera_rot.x;
+        view_rotation.y += camera_rot.y;
+        view_rotation.z += camera_rot.z;
+        view_translation.x += camera_trans.x;
+        view_translation.y += camera_trans.y;
+        view_translation.z += camera_trans.z;
 
         //for printing
-        if(xR > 360){
-            xR = xR - 360;
+        if(total_rotation.x > 360){
+            total_rotation.x -= 360;
         }
-        if(xR < -360)
-            xR = xR + 360;
-        if(yR > 360){
-            yR = yR - 360;
+        if(total_rotation.x < -360)
+            total_rotation.x += 360;
+        if(total_rotation.y > 360){
+            total_rotation.y -= 360;
         }
-        if(yR < -360)
-            yR = yR + 360;
-        if(zR > 360){
-            zR = zR - 360;
+        if(total_rotation.y < -360)
+            total_rotation.y += 360;
+        if(total_rotation.z > 360){
+            total_rotation.z -= 360;
         }
-        if(zR < -360)
-            zR = zR + 360;
+        if(total_rotation.z < -360)
+            total_rotation.z += 360;
         //printf("%d\n", xR);
         //printf("%d\n", yR);
         //printf("%d\n", zR);
                 
         //rotate initially, then rotate based on the incrementing rotation
         scale(modVert, n, 25);
-        model(modVert, n, xR + inX, yR + inY, zR + inZ);
 
 
-        translation(modVert, n, xTrans, yTrans, zTrans);
+        model(modVert, n, (vec3) {total_rotation.x + model_init_rotation.x, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z});
+
+        translation(modVert, n, model_translation);
 
         //setup our view
         for(int i = 0; i < n; i++){
@@ -188,8 +173,10 @@ int main(){
             makeShape(terminal, indices, points, stride, i, &offset);
         }
         printf("%f %f %f\n", points[0].z, points[1].z, points[2].z);
+        
 
-        int final_points_len = zBuffer(points, point_len, WIDTH, HEIGHT);
+
+        int final_points_len = zBuffer(points, offset + 1, WIDTH, HEIGHT);
         vec3 final_points[final_points_len];
         //transfer our data
         for(int i = 0; i < final_points_len; i++){
