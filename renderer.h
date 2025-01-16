@@ -25,23 +25,23 @@ void sortVert(vec3 vert[], int n){
 char zPrint(float z){
 
     //textures sheesh
-    if(z <= -0.8)
+    if(z < -0.2)
         return '@';
-    else if(z < -0.6)
+    else if(z < -0.15)
         return '&';
-    else if(z < -0.4)
+    else if(z < -0.1)
         return 'B';
-    else if(z < -0.2)
+    else if(z < -0.05)
         return 'Z';
     else if(z < 0.0)
         return 'Q';
-    else if(z < 0.2)
+    else if(z < 0.05)
         return 'X';
-    else if(z < 0.4)
+    else if(z < 0.1)
         return '|';
-    else if(z < 0.6)
+    else if(z < 0.15)
         return '<';
-    else if(z < 0.8)
+    else if(z < 0.2)
        return ':';
     else
         return '.';
@@ -86,10 +86,11 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
     //start the printing
     line = vert[0].y;
     space = vert[0].x - 1;
-
+    
     for(int i = 0; i < line; i++){
         screen[k++] = '\n';
     }
+    
     for(int i = 0; i < space; i++){
         screen[k++] = ' ';
     }
@@ -99,7 +100,7 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
         screen[k++] = zPrint(vert[0].z);
     }
         
-
+    
     for(int i = 1; i < n; i++){
         //count number of lines needed for current vertex
         //skip a vertex if its out of bounds
@@ -110,7 +111,7 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
         else{//curr vertex and prev vertex are NOT in the same line
             space = vert[i].x - 1;
         }
-
+        
         for(int j = 0; j < line; j++){
             screen[k++] = '\n';
         }
@@ -122,11 +123,12 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
             screen[k++] = zPrint(vert[i].z);
         }
              
-    };  
+    };
     for(int i = 0; i <= vert[n-1].y; i++){
         //printf("\n");
         screen[k++] = '\n';
     }
+    
     screen[k++] = '\0';
     printf("%s", screen);
 }
