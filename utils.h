@@ -80,10 +80,10 @@ mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
 }
 
 //responsible for rotating our vertices based on model transfomration
-void model(vec3 vert[], int size, int degX, int degY, int degZ){
-    float radX = rad(degX);
-    float radY = rad(degY);
-    float radZ = rad(degZ);
+void model(vec3 vert[], int size, vec3 deg){
+    float radX = rad(deg.x);
+    float radY = rad(deg.y);
+    float radZ = rad(deg.z);
 
 
     //get our transformation matrix
@@ -136,11 +136,11 @@ void proj(vec3 vert[], int size, int far, int near, int fov, int WIDTH, int HEIG
 
 
 //translates the vertex coords. Essentially, we move the world
-void translation(vec3 vert[], int size, float x, float y, float z){
+void translation(vec3 vert[], int size, vec3 trans){
     for(int i = 0; i < size; i++){
-        vert[i].x -= x;
-        vert[i].y -= y;
-        vert[i].z -= z;
+        vert[i].x -= trans.x;
+        vert[i].y -= trans.y;
+        vert[i].z -= trans.z;
     }
 }
 

@@ -7,22 +7,6 @@
 #include "vertex.h"
 #include "utils.h"
 
-/*
-    its pseudo time!!
-    since two points make a line, we use a line algo of somekind to determine the points of the line
-    Given points
-    (x0, y0) -> (xn, yn)
-    then the set of points between the two is
-    {(x0, y0), (x1, y1).....(xn,yn)}
-
-
-    since we print downwards then sidewards, then our algo must be in terms of x
-    the set of points shall then be stored in a large array containing all other points, then sort them by ascending y value then print omega lul
-    
-
-*/
-
-
 
 //draw line in terms of x (bresenham algo)
 void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
@@ -144,13 +128,7 @@ void lineDraw(vec3* vert1, vec3* vert2, vec3 points[], int offset){
             lineHigh(vert1, vert2, points, m, offset);
     }
 }
-//length of a line
-/* lineLen pseudo shit
-    given points A and B, and dx is Ax - Bx annd dy is Ay - By,
-    the number of points between A and B is determined by finding the greater number
-    between abs of dx and abs of dy
 
-*/
 int lineLen(vec3 vert[], int i, int j){
     int m = abs(vert[i].x - vert[j].x);
     int n = abs(vert[i].y - vert[j].y);
@@ -158,14 +136,7 @@ int lineLen(vec3 vert[], int i, int j){
     return len + 1;
 
 }
-//length of a shape
-/*
-    pseudo time
-    Given a shape with stride n and points (X0, X1, ..., Xn),
-    the perimter of the shape is the sum of all lines of point xi to xi + 1  until i = n, 
-    then we get the length of the line of point x0 -> xn
 
-*/
 int shapeLen(vec3 vert[], int indices[], int stride, int offset){
     int vert_index = stride * offset;
     int shape_len = 0;
@@ -182,16 +153,7 @@ int shapeLen(vec3 vert[], int indices[], int stride, int offset){
     shape_len = sqrt((s * (s - a) * (s - b) * (s - c))) * 2;
     return shape_len;
 }
-//needed to find the size of our big array
-/*
-    pseudo time
-    Given n indices with stride m, to get the number of points total,
-    get the length of each shape with vertices m following the pattern provided by the indices,
-    where the number of indices per shape is determined by the stride m, and the number of shape is
-    n / m
 
-
-*/
 int pointsLen(vec3 vert[], int indices[], int stride, int index_size){
     int points_len = 0;
     int shapes_n = index_size/stride;
@@ -214,28 +176,35 @@ void raster(vec3 points[], int start, int end, int *point_offset){
     }
 }
 
-//downright the hardest thing to conceptualize
-/*
-    Consider the following vertices = {
-    0, 0.5, 1,
-    -0.5, 0, 1,
-    0.5, 0, 1}
-    and indices = {1, 0, 2}
-    to cast our shape, we have to draw our lines from  1 -> 0, 0 -> 2, then 1->2
+void makeGround(vec3 points[], int point_len, vec3 scene[], int scene_points, int HEIGHT, int WIDTH, int FAR){
+    int i = 0;
+    int j = 0;
+    vec3 curr = {10, HEIGHT/2, FAR};
+    
+    mergesort(points, 0, point_len - 1);
+    while(points[i].y <= HEIGHT/2)
+        scene[j++] = points[i++];
+    while(i < point_len){
+        if(points[i].x != curr.x && points[i].y != curr.y && points[i].z != curr.z){
+            scene[j++] = curr;
+        }
+        else
+            scene[j++] = points[i];
+        if(curr.x >= WIDTH){
+            curr.y--;
+            curr.z--;
+            curr.x = 10;
+        }
+        else{
+            curr.x++;
+        }
+        i++;
+    }
 
-    lets say we have lines with length such that A = 5, B = 4, C = 5
-    we have to store the points of A in an array of points points[pointsLen]
+    mergesort(scene, 0, scene_points - 1);
+}
 
-    to do this, we must get the length of each line using lineLen, use our lineDraw function such that
-    our points are stored frome points[offset] to points[offset + lineLen] where offset
-    is determined by an accumilator that increments for every lenght of the line that we have drawn
 
-    someway somehow, we need to save the last offset so that the next shape can utilize the offset
-    therefor we must pass a point for our point offset, which will determine the starting value of our offset
-
-*/
-
-//this is the bane of my existence
 void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset, int* point_offset){
     int indices_start = offset * stride;
     int index1;
