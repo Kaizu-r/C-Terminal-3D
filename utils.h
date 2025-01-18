@@ -79,6 +79,11 @@ mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
     return transform;
 }
 
+float dot(vec3 vec1, vec3 vec2){
+    float prod = (vec1.x * vec2.x) + (vec1.y * vec2.y) + (vec1.z * vec2.z);
+    return prod;
+}
+
 //responsible for rotating our vertices based on model transfomration
 void model(vec3 vert[], int size, vec3 deg){
     float radX = rad(deg.x);
@@ -175,6 +180,12 @@ void camera(vec3 vert[], int size, float focal){
     }
 }
 
+void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans){
+    scale(vert, size, factor);
+    model(vert, size, deg);
+    translation(vert, size, trans);
+}
+
 //custom merge sort algo
 void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
     int start1, start2, k;
@@ -221,6 +232,11 @@ void mergesort(vec3 vertices[], int i, int j){
     mergesort(vertices, i, mid);
     mergesort(vertices, mid+1, j);
     merge(vertices, i, mid, mid+1, j);
+}
+
+float vect_distance(vec3 vec1, vec3 vec2){
+    vec3 diff = {vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z}; 
+    return sqrt(dot(diff, diff));
 }
 
 
