@@ -37,6 +37,7 @@ void lineLow(vec3 vert1, vec3 vert2, vec3 points[], int n, int offset){
         points[i + offset].x = i + vert1.x;
         points[i + offset].y = y;
         points[i + offset].z = z;
+        points[i + offset].l = vert1.l;
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
@@ -91,6 +92,7 @@ void lineHigh(vec3 vert1, vec3 vert2, vec3 points[], int n, int offset){
         points[i + offset].x = x;
         points[i + offset].y = i + vert1.y;
         points[i + offset].z = z;
+        points[i + offset].l = vert1.l;
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
@@ -164,6 +166,16 @@ int pointsLen(vec3 vert[], int indices[], int stride, int index_size){
     return points_len;
 }
 
+void emit_light(vec3 *vert1, vec3 *vert2, vec3 *vert3, vec3 light, int WIDTH, int HEIGHT){
+    light = toTerminal(&light, WIDTH, HEIGHT);
+    vec3 norm = normal(*vert1, *vert2, *vert3);
+    
+    float angle = v_angle(norm, light);
+    vert1->l = angle/(3);
+    vert2->l = angle/(3);
+    vert3->l = angle/(3);
+}
+
 void raster(vec3 points[], int start, int end, int *point_offset){
     mergesort(points, start, end); //sort first
     for(int i = start; i <= end; i++){
@@ -215,6 +227,7 @@ void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset
     for(int i = 0; i < stride - 1; i++){
         index1 = indices[indices_start + i];
         index2 = indices[indices_start + i + 1];
+        
         lineDraw(vert[index1], vert[index2], points, line_offset);
         line_offset += lineLen(vert[index1], vert[index2]);
     }
@@ -232,17 +245,6 @@ void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset
     raster(points, start, *point_offset, point_offset);
 }
 
-//uses raycasting to check if point is hit by light
-void emit_light(vec3 vert[], int point_len, vec3 light, int WIDTH, int HEIGHT){
-    light = toTerminal(&light, WIDTH, HEIGHT);
-
-    int ray_len;
-    for(int i = 0; i < point_len; i++){
-       ray_len = lineLen(vert[i], light);
-       vec3 ray[ray_len];
-    }
-
-}
 
 
 
