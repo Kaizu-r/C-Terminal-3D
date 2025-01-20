@@ -9,14 +9,33 @@
 
 
 
-void toFrag(vec3 point[], int point_len, float *frag[], int WIDTH, int HEIGHT){
-    for(int i = 0; i < point_len; i++){
-        //copy to frag at index (x, y) if it is bound by the screen
-        if(point[i].x >= 0 && point[i].y >= 0 && point[i].x < WIDTH && point[i].y < HEIGHT){
-            frag[ (int) point[i].x][ (int) point[i].y] = point[i].l; // transfer lighting value
+float ** makeFrag(int WIDTH, int HEIGHT){
+    float *values = (float*) calloc(WIDTH * HEIGHT, sizeof(float));
+    float ** frag = (float**) malloc(WIDTH * sizeof(float*));
+
+    for(int i = 0; i < WIDTH; i++){
+        frag[i] = values + i*HEIGHT;
+    }
+    
+    return frag;
+}
+
+void resetFrag(float** frag, int WIDTH, int HEIGHT){
+    for(int i = 0; i < WIDTH; i++){
+        for(int j = 0; j < HEIGHT; j++){
+            frag[i][j] = 1;
         }
     }
 }
+
+void setFrag(vec3 points[], int point_len, float** frag, int WIDTH, int HEIGHT){
+    for(int i = 0; i < point_len; i++){
+        if(points[i].x >= 0 && points[i].x < WIDTH && points[i].y >= 0 && points[i].y < HEIGHT){
+            frag[(int) points[i].x][(int) points[i].y] = points[i].l;
+        }
+    }
+}
+
 
 
 
