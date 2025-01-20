@@ -5,23 +5,23 @@
 #include "shader.h"
 #include "utils.h"
 
-#define WIDTH 80
-#define HEIGHT 40
+#define WIDTH 100
+#define HEIGHT 50
 #define FPS 12
 
 int main(){
     
     vec3 vertices[] = {
     //front
-    -0.5, 0.5, -0.5,
-    -0.5, -0.5, -0.5,
-    0.5, 0.5, -0.5,
-    0.5, -0.5, -0.5,
+    -0.5, 0.5, -0.5, 0,
+    -0.5, -0.5, -0.5, 0,
+    0.5, 0.5, -0.5, 0,
+    0.5, -0.5, -0.5, 0,
     //back
-    -0.5, 0.5, 0.5,
-    -0.5, -0.5, 0.5,
-    0.5, 0.5, 0.5,
-    0.5, -0.5, 0.5,
+    -0.5, 0.5, 0.5, 0,
+    -0.5, -0.5, 0.5, 0,
+    0.5, 0.5, 0.5, 0,
+    0.5, -0.5, 0.5, 0,
 
         
 
@@ -36,28 +36,84 @@ int main(){
         4,5,1,
         2,3,6,
         6,7,3,
-        0,2,4,
-        4,2,6,
-
-    
-
+       // 0,2,4,
+        //4,2,6,
     };
 
+    vec3 vertices2[] = {
+    //front
+    -0.5, 0.5, -0.5, 0,
+    -0.5, -0.5, -0.5, 0,
+    0.5, 0.5, -0.5, 0,
+    0.5, -0.5, -0.5, 0,
+
+    -0.5, 0.5, 0.5, 0,
+    -0.5, -0.5, 0.5, 0,
+    0.5, 0.5, 0.5, 0,
+    0.5, -0.5, 0.5, 0,
+        
+
+    };
+    vec3 ground[] ={
+        -0.5, 0.5, -0.5, 0,
+        -0.5, -0.5, -0.5, 0,
+        0.5, 0.5, -0.5, 0,
+        0.5, -0.5, -0.5, 0,
+
+        -0.5, 0.5, 0.5, 0,
+        -0.5, -0.5, 0.5, 0,
+        0.5, 0.5, 0.5, 0,
+        0.5, -0.5, 0.5, 0,
+    };
+    int ground_ind[] ={
+        0,1,2,
+        1,2,3,
+        4,5,6,
+        5,6,7,
+        0,1,4,
+        4,5,1,
+        2,3,6,
+        6,7,3,
+        //0,2,4,
+        //4,2,6,
+    };
+    //left to right in terms of x
+    int indices2[] = {
+        0,1,2,
+        1,2,3,
+        4,5,6,
+        5,6,7,
+        0,1,4,
+        4,5,1,
+        2,3,6,
+        6,7,3,
+        //0,2,4,
+        //4,2,6,
+    };
+
+    int indCount1 = sizeof(indices)/sizeof(int);
+    int indCount2 = sizeof(indices2)/sizeof(int);
+    int indCount3 = sizeof(ground_ind)/sizeof(int);
+    int ind_res = indCount1 + indCount2 + indCount3;
+
+    int comb_ind[indCount1 + indCount2];
+    int total_ind[ind_res];
     //setup rotation here
-    vec3 model_rotation = {10,0,0};
+    vec3 model_rotation = {10,10,0};
 
     //set up initial rotation
-    vec3 model_init_rotation = {0, 30, 0};
+    vec3 model_init_rotation = {0, 0, 0};
 
 
     //setup translation here
-    vec3 model_translation = {0, 0, 0};
+    vec3 model_translation = {20, 0, -10};
 
-    
+    //light
+    vec3 light = {0, -10, 0};
 
     //setup camera here
     float far = 70;
-    float near = 1;
+    float near = 0.2;
 
     vec3 camera_trans = {0, 0, 0};
     //camera rotation
@@ -73,13 +129,18 @@ int main(){
     vec3 view_translation = {0, 0, 0};
     vec3 total_rotation = {0,0,0};
     int n = sizeof(vertices)/sizeof(vec3);
+    int m = sizeof(vertices2)/sizeof(vec3);
+    int g = sizeof(ground)/sizeof(vec3);
     vec3 pixels[n];
-    vec3 terminal[n];
+    vec3 terminal[n + m + g];
     vec3 modTrans[n];
     vec3 modVert[n];
-    vec3 viewM[n];
-    vec3 projection[n];
-    vec3 cam[n];
+    vec3 modVert2[m];
+    vec3 groundVert[g];
+    vec3 comb[n + m];
+    vec3 viewM[n + m + g];
+    vec3 projection[n + m + g];
+    vec3 cam[n + m + g];
 
     //initialize the screen
     char screen[HEIGHT * WIDTH + 10];
@@ -91,6 +152,12 @@ int main(){
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
             modVert[i] = vertices[i];
+        }
+        for(int i = 0; i < m; i++){
+            modVert2[i] = vertices2[i];
+        }
+        for(int i = 0; i < g; i++){
+            groundVert[i] = ground[i];
         }
 
         //edit if needed
@@ -125,36 +192,31 @@ int main(){
         //printf("%d\n", zR);
                 
         //rotate initially, then rotate based on the incrementing rotation
-        scale(modVert, n, 25);
+
+        modelTransform(modVert, n, 20, (vec3) {total_rotation.x + model_init_rotation.x, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z},  model_translation);
+        modelTransform(modVert2, m, 20, (vec3) {total_rotation.x + model_init_rotation.x, -(total_rotation.y + model_init_rotation.y), total_rotation.z + model_init_rotation.z},  (vec3) {-10, -5, 10});
+        modelTransform(groundVert, g,20, (vec3) {0, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z},  (vec3) {0, 25, -10});
 
 
-        model(modVert, n, (vec3) {total_rotation.x + model_init_rotation.x, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z});
+        merge_models(modVert, modVert2, comb, indices, indices2, comb_ind, n, m, indCount1, indCount2);
+        merge_models( comb, groundVert, viewM, comb_ind, ground_ind, total_ind, n + m, g, indCount1 + indCount2, indCount3);
 
-        translation(modVert, n, model_translation);
-
-        //setup our view
-        for(int i = 0; i < n; i++){
-            viewM[i] = modVert[i];
-        }
-       
-       //transform based on view space
-        //view(viewM, n, tX, tY, tZ, vX, vY, vZ);
-    
-        for(int i = 0; i < n; i++){
+        view(viewM, n + m + g, view_translation, view_rotation);
+        for(int i = 0; i < n + m + g; i++){
             projection[i] = viewM[i];
         }
         //transform to projection space
-        proj(projection, n, far, near, fov, WIDTH, HEIGHT);
+        proj(projection, n + m + g, far, near, fov, WIDTH, HEIGHT);
 
-        for(int i = 0; i < n; i++){
+        for(int i = 0; i < n + m + g; i++){
             cam[i] = projection[i];
            
         }
         //transform based on focal length
-        camera(cam, n, focal);
+        camera(cam, n + m + g, focal);
 
         //convert 
-        for(int i = 0; i < n; i++){
+        for(int i = 0; i < n + m + g; i++){
             //pixels[i] = toPixel(&cam[i], WIDTH, HEIGHT);
             terminal[i] = toTerminal(&cam[i], WIDTH, HEIGHT);
         }
@@ -168,19 +230,18 @@ int main(){
         points = malloc(point_len * sizeof(vec3));
         int offset = 0;
         int stride = 3;
-        int shapes = (sizeof(indices)/sizeof(int))/stride;
+        int shapes = (sizeof(total_ind)/sizeof(int))/stride;
         for(int i = 0; i < shapes; i++){
-            makeShape(terminal, indices, points, stride, i, &offset);
+            //careful not to uncomment
+            //emit_light(&terminal[indices[offset]], &terminal[indices[offset + 1]], &terminal[indices[offset + 2]], light, WIDTH, HEIGHT);
+            makeShape(terminal, total_ind, points, stride, i, &offset);
         }
-        printf("%f %f %f\n", points[0].z, points[1].z, points[2].z);
-        
-
-
         int final_points_len = zBuffer(points, offset + 1, WIDTH, HEIGHT);
         vec3 final_points[final_points_len];
         //transfer our data
         for(int i = 0; i < final_points_len; i++){
             final_points[i] = points[i];
+            //printf("%f %f %f\n", final_points[i].x, final_points[i].y, final_points[i].z);
             final_points[i].z =final_points[i].z *  1/(far - near) - (near)/(far - near); 
         }
 
