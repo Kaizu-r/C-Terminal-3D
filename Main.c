@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "frag.h"
 #include "renderer.h"
 #include "shader.h"
 #include "utils.h"
 
-#define WIDTH 100
-#define HEIGHT 50
+#define WIDTH 60
+#define HEIGHT 30
 #define FPS 12
 
 int main(){
@@ -142,8 +143,10 @@ int main(){
     vec3 projection[n + m + g];
     vec3 cam[n + m + g];
 
+    float **frag = makeFrag(WIDTH, HEIGHT);
+
     //initialize the screen
-    char screen[HEIGHT * WIDTH + 10];
+    char screen[HEIGHT * WIDTH + HEIGHT];
     int point_len = HEIGHT * WIDTH * 1.5;
     vec3 *points;
     while(1){
@@ -193,9 +196,9 @@ int main(){
                 
         //rotate initially, then rotate based on the incrementing rotation
 
-        modelTransform(modVert, n, 20, (vec3) {total_rotation.x + model_init_rotation.x, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z},  model_translation);
-        modelTransform(modVert2, m, 20, (vec3) {total_rotation.x + model_init_rotation.x, -(total_rotation.y + model_init_rotation.y), total_rotation.z + model_init_rotation.z},  (vec3) {-10, -5, 10});
-        modelTransform(groundVert, g,20, (vec3) {0, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z},  (vec3) {0, 25, -10});
+        modelTransform(modVert, n, 12, (vec3) {total_rotation.x + model_init_rotation.x, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z},  model_translation);
+        modelTransform(modVert2, m, 12, (vec3) {total_rotation.x + model_init_rotation.x, -(total_rotation.y + model_init_rotation.y), total_rotation.z + model_init_rotation.z},  (vec3) {-10, -5, 10});
+        modelTransform(groundVert, g,12, (vec3) {0, total_rotation.y + model_init_rotation.y, total_rotation.z + model_init_rotation.z},  (vec3) {0, 25, -10});
 
 
         merge_models(modVert, modVert2, comb, indices, indices2, comb_ind, n, m, indCount1, indCount2);
@@ -236,19 +239,25 @@ int main(){
             //emit_light(&terminal[indices[offset]], &terminal[indices[offset + 1]], &terminal[indices[offset + 2]], light, WIDTH, HEIGHT);
             makeShape(terminal, total_ind, points, stride, i, &offset);
         }
+        //proj(points, point_len, far, near, fov, WIDTH, HEIGHT);
         int final_points_len = zBuffer(points, offset + 1, WIDTH, HEIGHT);
         vec3 final_points[final_points_len];
         //transfer our data
         for(int i = 0; i < final_points_len; i++){
             final_points[i] = points[i];
+            final_points[i].l = final_points[i].z * 1/(far - near) - (near)/(far - near);
+
             //printf("%f %f %f\n", final_points[i].x, final_points[i].y, final_points[i].z);
-            final_points[i].z =final_points[i].z *  1/(far - near) - (near)/(far - near); 
         }
 
-        printf("%f %f %f\n", final_points[0].z, final_points[1].z, final_points[2].z);
-        
+
+
         //attempt to render
-        render(final_points, final_points_len, WIDTH, HEIGHT, screen);
+
+        //render(final_points, final_points_len, WIDTH, HEIGHT, screen);
+        resetFrag(frag, WIDTH, HEIGHT);
+        setFrag(final_points, final_points_len, frag, WIDTH, HEIGHT);
+        renderFrag(frag, WIDTH, HEIGHT, screen);
         wait(FPS);
         clear();
         //free(screen);
