@@ -22,6 +22,8 @@ void sortVert(vec3 vert[], int n){
     mergesort(vert, 0, n-1);
 }
 
+
+
 char zPrint(float z){
 
     //textures sheesh
@@ -33,7 +35,7 @@ char zPrint(float z){
         return 'B';
     else if(z < -0.05)
         return 'Z';
-    else if(z < 0.0)
+    else if(z < -0.0)
         return 'Q';
     else if(z < 0.05)
         return 'X';
@@ -57,7 +59,8 @@ char zPrint(float z){
     increment j and then move i to k
    
 */
-int zBuffer(vec3 vert[], int n, int width, int height){
+
+int zBuffer(vec3 vert[], int n,  int width, int height){
     sortVert(vert, n);
 
     int i = 0;
@@ -66,6 +69,7 @@ int zBuffer(vec3 vert[], int n, int width, int height){
         if(vert[k].x > 0 && vert[k].x < width * 2 && vert[k].y > 0 && vert[k].y < height){     
             if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
                 vert[j] = vert[k];
+                //vert[j].z = arr[k];
                 i = k;
                 j++;
             }
