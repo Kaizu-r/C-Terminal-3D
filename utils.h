@@ -79,6 +79,18 @@ mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
     return transform;
 }
 
+float dot(vec3 vec1, vec3 vec2){
+    //scale them to small
+    vec1.x /= 100;
+    vec1.y /= 100;
+    vec1.z /= 100;
+    vec2.x /= 100;
+    vec2.y /= 100;
+    vec2.z /= 100;
+    float prod = (vec1.x * vec2.x) + (vec1.y * vec2.y) + (vec1.z * vec2.z);
+    return prod;
+}
+
 //responsible for rotating our vertices based on model transfomration
 void model(vec3 vert[], int size, vec3 deg){
     float radX = rad(deg.x);
@@ -153,17 +165,13 @@ void scale(vec3 vert[], int size, float factor){
 }
 
 //setup the view matrix
-void view(vec3 vert[], int size, float x, float y, float z, int rotX, int rotY, int rotZ){
-   
-    //default cam pos 
-    float camx = x;
-    float camy = x;
-    float camz = z;
+void view(vec3 vert[], int size, vec3 trans, vec3 rot){
+
     for(int i = 0; i < size; i++){
         //transforms it to view space by subtracting from camera location
-        vert[i].x -= camx;
-        vert[i].y -= camy;
-        vert[i].z -= camz;
+        vert[i].x -= trans.x;
+        vert[i].y -= trans.y;
+        vert[i].z -= trans.z;
     }
 }
 
@@ -173,6 +181,12 @@ void camera(vec3 vert[], int size, float focal){
         vert[i].x *= focal;
         vert[i].y *= focal;
     }
+}
+
+void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans){
+    scale(vert, size, factor);
+    model(vert, size, deg);
+    translation(vert, size, trans);
 }
 
 //custom merge sort algo
@@ -214,6 +228,22 @@ void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
 
 }
 
+float fast_inRoot(float number){
+    long i;
+	float x2, y;
+	const float threehalfs = 1.5F;
+
+	x2 = number * 0.5F;
+	y  = number;
+	i  = * ( long * ) &y;						// evil floating point bit level hacking
+	i  = 0x5f3759df - ( i >> 1 );               // what the fuck?
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+//	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+	return y;
+}
+
 void mergesort(vec3 vertices[], int i, int j){
     if(i >= j)
         return;
@@ -223,6 +253,56 @@ void mergesort(vec3 vertices[], int i, int j){
     merge(vertices, i, mid, mid+1, j);
 }
 
+float vect_distance(vec3 vec1, vec3 vec2){
+    vec3 diff = {vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z}; 
+    return sqrt(dot(diff, diff));
+}
+
+//calcs normal vector
+vec3 normal(vec3 vert1, vec3 vert2, vec3 vert3){
+    
+    vec3 A = {vert2.x - vert1.x, vert2.y - vert1.y, vert2.z - vert1.z};
+    vec3 B = {vert3.x - vert1.x, vert3.y - vert1.y, vert3.z - vert1.z};
+
+    vec3 norm;
+    norm.x = A.y * B.z - A.z * B.y;
+    norm.y = A.z * B.x - A.x * B.z;
+    norm.z = A.x * B.y - A.y * B.x;
+
+    
+
+    return norm;
+}
+
+//angle between two vectors
+float v_angle(vec3 vert1, vec3 vert2){
+    
+    float norms = sqrt(dot(vert1, vert1)) * sqrt(dot(vert2, vert2));
+    printf("%f ",norms);
+    float prod = dot(vert1, vert2);
+    printf("%f ",prod);
+    return acos(prod/norms);
+}
+
+void merge_models(vec3 mod1[], vec3 mod2[], vec3 res[], int ind1[], int ind2[], int ind_res[], int modSize1, int modSize2, int indSize1, int indSize2){
+    int j = 0, k = 0;
+    int i = 0;
+    while(i < modSize1){
+        res[j++] = mod1[i++]; 
+    }
+    i = 0;
+    while(i < modSize2){
+        res[j++] = mod2[i++]; 
+    }
+    i = 0;
+    while(i < indSize1){
+        ind_res[k++] = ind1[i++];
+    }
+    i = 0;
+    while(i < indSize2){
+        ind_res[k++] = ind2[i++] + modSize1;
+    }
+}
 
 //matrix transformations
 

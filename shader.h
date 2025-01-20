@@ -9,10 +9,10 @@
 
 
 //draw line in terms of x (bresenham algo)
-void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
-    int dx = vert2->x - vert1->x;
-    int dy = vert2->y - vert1->y;
-    int dz = vert2->z - vert1->z;
+void lineLow(vec3 vert1, vec3 vert2, vec3 points[], int n, int offset){
+    int dx = vert2.x - vert1.x;
+    int dy = vert2.y - vert1.y;
+    int dz = vert2.z - vert1.z;
     int yi = 1;
     int zi = 1;
 
@@ -31,12 +31,13 @@ void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     }
     int D = (dy << 1) - dx;
     int Dz = (dz << 1) - dx;
-    int y = vert1->y;
-    int z = vert1->z;
+    int y = vert1.y;
+    int z = vert1.z;
     for(int i = 0; i <= n; i++){
-        points[i + offset].x = i + vert1->x;
+        points[i + offset].x = i + vert1.x;
         points[i + offset].y = y;
         points[i + offset].z = z;
+        points[i + offset].l = vert1.l;
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
@@ -53,10 +54,10 @@ void lineLow(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
     }
 }
 
-void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
-    int dx = vert2->x - vert1->x;
-    int dy = vert2->y - vert1->y;
-    int dz = vert2->z - vert1->z;
+void lineHigh(vec3 vert1, vec3 vert2, vec3 points[], int n, int offset){
+    int dx = vert2.x - vert1.x;
+    int dy = vert2.y - vert1.y;
+    int dz = vert2.z - vert1.z;
     int xi = 1;
     int zi = 1;
 
@@ -83,14 +84,15 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
 
     int D = (dx << 1) - dy;
     int Dz = (dz << 1) - dy;
-    int x = vert1->x;
-    int z = vert1->z;
+    int x = vert1.x;
+    int z = vert1.z;
 
     //loop in reverse so it is sorted in ascending order
     for(int i = 0; i <= n; i++){
         points[i + offset].x = x;
-        points[i + offset].y = i + vert1->y;
+        points[i + offset].y = i + vert1.y;
         points[i + offset].z = z;
+        points[i + offset].l = vert1.l;
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
@@ -108,11 +110,11 @@ void lineHigh(vec3* vert1, vec3* vert2, vec3 points[], int n, int offset){
 
 }
 
-void lineDraw(vec3* vert1, vec3* vert2, vec3 points[], int offset){
-    int x0 = vert1->x;
-    int y0 = vert1->y;
-    int x1 = vert2->x;
-    int y1 = vert2->y;
+void lineDraw(vec3 vert1, vec3 vert2, vec3 points[], int offset){
+    int x0 = vert1.x;
+    int y0 = vert1.y;
+    int x1 = vert2.x;
+    int y1 = vert2.y;
     int n = abs(x0 - x1);
     int m = abs(y0 - y1);
     if(m < n){
@@ -129,9 +131,9 @@ void lineDraw(vec3* vert1, vec3* vert2, vec3 points[], int offset){
     }
 }
 
-int lineLen(vec3 vert[], int i, int j){
-    int m = abs(vert[i].x - vert[j].x);
-    int n = abs(vert[i].y - vert[j].y);
+int lineLen(vec3 vert1, vec3 vert2){
+    int m = abs(vert1.x - vert2.x);
+    int n = abs(vert1.y - vert2.y);
     int len = (m < n) ? n : m;
     return len + 1;
 
@@ -141,9 +143,9 @@ int shapeLen(vec3 vert[], int indices[], int stride, int offset){
     int vert_index = stride * offset;
     int shape_len = 0;
     //area of a our triangle
-    int a = lineLen(vert, indices[vert_index], indices[vert_index + 1]);
-    int b = lineLen(vert, indices[vert_index + 1], indices[vert_index + 2]);
-    int c = lineLen(vert, indices[vert_index], indices[vert_index + 2]);
+    int a = lineLen(vert[indices[vert_index]], vert[indices[vert_index + 1]]);
+    int b = lineLen(vert[indices[vert_index + 1]], vert[indices[vert_index + 2]]);
+    int c = lineLen(vert[indices[vert_index]], vert[indices[vert_index + 2]]);
 
     float s = (a + b + c)/2;
 
@@ -164,18 +166,29 @@ int pointsLen(vec3 vert[], int indices[], int stride, int index_size){
     return points_len;
 }
 
+void emit_light(vec3 *vert1, vec3 *vert2, vec3 *vert3, vec3 light, int WIDTH, int HEIGHT){
+    light = toTerminal(&light, WIDTH, HEIGHT);
+    vec3 norm = normal(*vert1, *vert2, *vert3);
+    
+    float angle = v_angle(norm, light);
+    vert1->l = angle/(3);
+    vert2->l = angle/(3);
+    vert3->l = angle/(3);
+}
+
 void raster(vec3 points[], int start, int end, int *point_offset){
     mergesort(points, start, end); //sort first
     for(int i = start; i <= end; i++){
         if(points[i].y == points[i + 1].y){
-            lineDraw(&points[i], &points[i + 1], points, *point_offset);
-            *point_offset += lineLen(points, i, i + 1);
+            lineDraw(points[i], points[i + 1], points, *point_offset);
+            *point_offset += lineLen(points[i], points[i + 1]);
 
         }
 
     }
 }
 
+//not working rip
 void makeGround(vec3 points[], int point_len, vec3 scene[], int scene_points, int HEIGHT, int WIDTH, int FAR){
     int i = 0;
     int j = 0;
@@ -201,7 +214,7 @@ void makeGround(vec3 points[], int point_len, vec3 scene[], int scene_points, in
         i++;
     }
 
-    mergesort(scene, 0, scene_points - 1);
+    //mergesort(scene, 0, scene_points - 1);
 }
 
 
@@ -214,14 +227,15 @@ void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset
     for(int i = 0; i < stride - 1; i++){
         index1 = indices[indices_start + i];
         index2 = indices[indices_start + i + 1];
-        lineDraw(&vert[index1], &vert[index2], points, line_offset);
-        line_offset += lineLen(vert, index1, index2);
+        
+        lineDraw(vert[index1], vert[index2], points, line_offset);
+        line_offset += lineLen(vert[index1], vert[index2]);
     }
     //draw our last line
     index1 = indices[indices_start];
     index2 = indices[indices_start + stride - 1];
-    lineDraw(&vert[index1], &vert[index2], points, line_offset);
-    line_offset += lineLen(vert, index1, index2);
+    lineDraw(vert[index1], vert[index2], points, line_offset);
+    line_offset += lineLen(vert[index1], vert[index2]);
 
     //mergesort(points, *point_offset, line_offset);
     //int total_y = points[line_offset].y - points[*(point_offset)].y;
@@ -230,6 +244,7 @@ void makeShape(vec3 vert[], int indices[], vec3 points[], int stride, int offset
     *point_offset = line_offset;
     raster(points, start, *point_offset, point_offset);
 }
+
 
 
 

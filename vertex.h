@@ -7,6 +7,7 @@ typedef struct vector3{
     float x;
     float y;
     float z;
+    float l;
 } vec3;
 
 typedef struct vector2{

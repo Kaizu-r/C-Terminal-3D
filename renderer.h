@@ -22,6 +22,8 @@ void sortVert(vec3 vert[], int n){
     mergesort(vert, 0, n-1);
 }
 
+
+
 char zPrint(float z){
 
     //textures sheesh
@@ -33,7 +35,7 @@ char zPrint(float z){
         return 'B';
     else if(z < -0.05)
         return 'Z';
-    else if(z < 0.0)
+    else if(z < -0.0)
         return 'Q';
     else if(z < 0.05)
         return 'X';
@@ -43,8 +45,10 @@ char zPrint(float z){
         return '<';
     else if(z < 0.2)
        return ':';
-    else
+    else if(z < 0.25)
         return '.';
+    else
+        return ' ';
 
 }
 
@@ -57,7 +61,8 @@ char zPrint(float z){
     increment j and then move i to k
    
 */
-int zBuffer(vec3 vert[], int n, int width, int height){
+
+int zBuffer(vec3 vert[], int n,  int width, int height){
     sortVert(vert, n);
 
     int i = 0;
@@ -66,6 +71,7 @@ int zBuffer(vec3 vert[], int n, int width, int height){
         if(vert[k].x > 0 && vert[k].x < width * 2 && vert[k].y > 0 && vert[k].y < height){     
             if(vert[i].y != vert[k].y || vert[i].x != vert[k].x){ //store i to j
                 vert[j] = vert[k];
+                //vert[j].z = arr[k];
                 i = k;
                 j++;
             }
@@ -97,7 +103,7 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
     //do the real printing
     if(vert[0].x >= 0 && vert[0].x <= width * 1.5 )
     {
-        screen[k++] = zPrint(vert[0].z);
+        screen[k++] = zPrint(vert[0].l);
     }
         
     
@@ -120,7 +126,7 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
         }
         if(vert[i].x >= 0 && vert[i].x <= width << 1){
             
-            screen[k++] = zPrint(vert[i].z);
+            screen[k++] = zPrint(vert[i].l);
         }
              
     };
@@ -131,6 +137,19 @@ void render(vec3 vert[], int n, int width, int height, char screen[]){
     
     screen[k++] = '\0';
     printf("%s", screen);
+}
+
+//more in line with traditional rendering
+void renderFrag(float **frag, int WIDTH, int HEIGHT, char screen[]){
+    int k = 0;
+    for(int i = 0; i < HEIGHT; i++){
+        for(int j = 0; j < WIDTH; j++){
+            screen[k++] = zPrint(frag[j][i]);
+        }
+        screen[k++] = '\n';
+    }
+    screen[k++] = '\0';
+    printf(screen);
 }
 
 #endif
