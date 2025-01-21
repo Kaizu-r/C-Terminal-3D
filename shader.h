@@ -166,14 +166,100 @@ int pointsLen(vec3 vert[], int indices[], int stride, int index_size){
     return points_len;
 }
 
-void emit_light(vec3 *vert1, vec3 *vert2, vec3 *vert3, vec3 light, int WIDTH, int HEIGHT){
-    light = toTerminal(&light, WIDTH, HEIGHT);
-    vec3 norm = normal(*vert1, *vert2, *vert3);
-    
-    float angle = v_angle(norm, light);
-    vert1->l = angle/(3);
-    vert2->l = angle/(3);
-    vert3->l = angle/(3);
+//screenspace ray traced shadows
+void emit_light(vec3 points[], int point_len, vec3 world[], int world_len, vec3 light, float res, int WIDTH, int HEIGHT){
+    //light = toTerminal(&light, WIDTH, HEIGHT);
+    sortVert(world, world_len);
+    int a =0, b = 0, c = 0;
+    int screen_points[WIDTH][HEIGHT]; //index of points seen in the screen
+    int world_points[WIDTH][HEIGHT]; //index of starting xy pairs
+    //set point index to -1
+    for(int i = 0; i < WIDTH; i++){
+        for(int j= 0; j < HEIGHT; j++){
+            screen_points[i][j] = -1;
+            world_points[i][j] = -1;
+        }
+    }
+
+    for(int i = 0; i < point_len; i++){
+            screen_points[(int) points[i].x][(int) points[i].y] = i;    //store index of screen points
+            //printf("%d\n", screen_points[(int) points[i].x][(int) points[i].y]);
+    }
+    for(int i = 0; i < world_len; i++){
+        if(world_points[(int) world[i].x][(int) world[i].y] == -1)  //if still free
+            world_points[(int) world[i].x][(int) world[i].y] = i;
+    }
+
+    for(int i = 0; i < WIDTH; i++){
+        for(int j = 0; j < HEIGHT; j++){
+            //printf("%d\n", screen_points[i][j]);
+            if((screen_points[i][j] != -1)){
+                //printf("%d\n", screen_points[i][j]);
+                vec3 dir;
+                int index = screen_points[i][j];
+                vec3 curr = points[index];
+                dir = v_angle(points[index], light);
+                
+                vec3 orig = curr;
+
+                int k = 0;
+                while(curr.x <= WIDTH && curr.x >= 0 && curr.y <= HEIGHT && curr.y >= 0){//&& ((int) curr.x != (int) light.x || (int)  curr.y != (int)  curr.y || (int)  curr.z != (int)  curr.z)){ //curr not yet in light
+                    k++;
+                    curr.x =precision(orig.x + k * dir.x, res);
+                    curr.y =precision(orig.y + k * dir.y, res);
+                    curr.z =precision(orig.z + k * dir.z, res);
+                    int x_index = (int) curr.x;
+                    int y_index = (int) curr.y;
+                    
+                    //printf("%f %f\n", curr.x, curr.y);
+                    //printf("%d\n", screen_points[x_index][y_index]);
+                    if(x_index >= WIDTH || y_index >= HEIGHT){ //out of bounds, therefore no point
+                        break;
+                    }
+
+                    int found_index;
+                    if(world_points[x_index][y_index] != -1){
+                        found_index = world_points[x_index][y_index];
+
+                        vec3 found = world[found_index];
+                        found.x = precision(found.x, res);
+                        found.y = precision(found.y, res);
+                        found.z = precision(found.z, res);
+
+                        while(found.x == x_index && found.y == y_index){
+                            if(found.x == curr.x && found.y == curr.y && found.z == curr.z){ //found a match
+                                //points[index].l += (points[index].l + 0.2 >=0.25) ? 0: 0.2;
+                                //printf("x");
+                                break;
+                            }
+                            found_index++;
+                            found = world[found_index];
+                            found.x = precision(found.x, res);
+                            found.y = precision(found.y, res);
+                            found.z = precision(found.z, res);  
+                        }
+                        if(found.x == curr.x && found.y == curr.y && found.z == curr.z){ //found a match
+                            points[index].l = 0.355;
+                            //printf("x");
+                                break;
+                        }
+                        
+
+                    }
+                    
+                    
+                }
+            }
+            
+
+
+
+        }
+    }
+
+
+
+
 }
 
 void raster(vec3 points[], int start, int end, int *point_offset){
