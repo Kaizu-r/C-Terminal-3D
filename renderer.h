@@ -45,8 +45,8 @@ char zPrint(float z){
         return '<';
     else if(z < 0.2)
        return ':';
-    else if(z < 0.25)
-        return '.';
+    else if(z < 0.35)
+        return '\'';
     else
         return ' ';
 
