@@ -23,7 +23,7 @@ float ** makeFrag(int WIDTH, int HEIGHT){
 void resetFrag(float** frag, int WIDTH, int HEIGHT){
     for(int i = 0; i < WIDTH; i++){
         for(int j = 0; j < HEIGHT; j++){
-            frag[i][j] = 0.25;
+            frag[i][j] = 0.36;
         }
     }
 }
@@ -37,7 +37,7 @@ void setFrag(vec3 points[], int point_len, float** frag, int WIDTH, int HEIGHT){
 }
 
 void fragTest(float** frag, int WIDTH, int HEIGHT){
-    float slope = 0.1/(HEIGHT);
+    float slope = 0.03/(HEIGHT);
     float total = 0;
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
