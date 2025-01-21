@@ -80,13 +80,7 @@ mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
 }
 
 float dot(vec3 vec1, vec3 vec2){
-    //scale them to small
-    vec1.x /= 100;
-    vec1.y /= 100;
-    vec1.z /= 100;
-    vec2.x /= 100;
-    vec2.y /= 100;
-    vec2.z /= 100;
+
     float prod = (vec1.x * vec2.x) + (vec1.y * vec2.y) + (vec1.z * vec2.z);
     return prod;
 }
@@ -145,6 +139,9 @@ void proj(vec3 vert[], int size, int far, int near, int fov, int WIDTH, int HEIG
 
 }
 
+float precision(float num, float factor){
+    return ((int) num * factor)/factor;
+}
 
 
 //translates the vertex coords. Essentially, we move the world
@@ -275,13 +272,19 @@ vec3 normal(vec3 vert1, vec3 vert2, vec3 vert3){
 }
 
 //angle between two vectors
-float v_angle(vec3 vert1, vec3 vert2){
-    
-    float norms = sqrt(dot(vert1, vert1)) * sqrt(dot(vert2, vert2));
-    printf("%f ",norms);
-    float prod = dot(vert1, vert2);
-    printf("%f ",prod);
-    return acos(prod/norms);
+vec3 v_angle(vec3 vert1, vec3 vert2){
+    vec3 dir;
+    dir.x = vert1.x - vert2.x;
+    dir.y = vert1.y - vert2.y;
+    dir.z = vert1.z - vert2.z;
+
+    //printf("%f %f %f ", dir.x, dir.y, dir.z);
+    float inverse_norm = fast_inRoot(dot(dir, dir));
+    dir.x = ((int) dir.x * inverse_norm * 1000)/1000.0;
+    dir.y = ((int) dir.y * inverse_norm * 1000)/1000.0;
+    dir.z = ((int) dir.z * inverse_norm * 1000)/1000.0;
+
+    return dir;
 }
 
 void merge_models(vec3 mod1[], vec3 mod2[], vec3 res[], int ind1[], int ind2[], int ind_res[], int modSize1, int modSize2, int indSize1, int indSize2){
