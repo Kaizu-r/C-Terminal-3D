@@ -116,7 +116,7 @@ int main(){
     vec3 model_translation = {5, 0, 0, 0};
 
     //light
-    vec3 light = {-WIDTH/2, HEIGHT * 2, 0, 0};
+    vec3 light = {4, HEIGHT, 0, 0};
     //light = toTerminal(&light, WIDTH, HEIGHT);
 
     //setup camera here
@@ -269,7 +269,7 @@ int main(){
 
         //render(final_points, final_points_len, WIDTH, HEIGHT, screen);
         
-        emit_light(final_points, final_points_len, points, point_len, light, 0.1, WIDTH, HEIGHT);
+        emit_light(final_points, final_points_len, points, point_len, light, 0.1, 100, WIDTH, HEIGHT);
         for(int i = 0; i < final_points_len; i++){
             final_points[i].l += 0.5 * (final_points[i].z * 1/(far - near) - (near)/(far - near));
 
@@ -277,7 +277,7 @@ int main(){
         }
         //emit_light(final_points, final_points_len, points, point_len, light, 1, WIDTH, HEIGHT);
         resetFrag(frag, WIDTH, HEIGHT);
-        fragTest(frag, WIDTH, HEIGHT);
+        //fragTest(frag, WIDTH, HEIGHT);
         setFrag(final_points, final_points_len, frag, WIDTH, HEIGHT);
         renderFrag(frag, WIDTH, HEIGHT, screen);
         wait(FPS);
