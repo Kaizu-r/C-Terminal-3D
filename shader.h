@@ -190,8 +190,9 @@ void emit_light(vec3 points[], int point_len, vec3 world[], int world_len, vec3 
     }
     for(int i = 0; i < world_len; i++){
         if(world[i].z + distance/2 >= 0){ //store only within valid distance
-            if(world_points[(int) world[i].x][(int) world[i].y][(int) world[i].z] == -1){  //if still fre
-                world_points[(int) world[i].x][(int) world[i].y][(int) world[i].z] = i;
+            int new_z = world[i].z + distance/2;
+            if(world_points[(int) world[i].x][(int) world[i].y][new_z] == -1){  //if still fre
+                world_points[(int) world[i].x][(int) world[i].y][new_z] = i;
             }
         }
     }
@@ -202,25 +203,22 @@ void emit_light(vec3 points[], int point_len, vec3 world[], int world_len, vec3 
                 vec3 dir;
                 int index = screen_points[i][j];
                 vec3 curr = points[index];
-                dir = v_angle(points[index], light);
+                dir = v_angle(curr, light);
                 
                 vec3 orig = curr;
 
-                int k = 0;
-                
                 while(1){
-                    k++;
                     
-                    curr.x =precision(orig.x + k * dir.x, res);
-                    curr.y =precision(orig.y + k * dir.y, res);
-                    curr.z =precision(orig.z + k * dir.z, res);
+                    curr.x += dir.x;
+                    curr.y += dir.y;
+                    curr.z +=  dir.z;
                     int x_index = (int) curr.x;
                     int y_index = (int) curr.y;
                     int z_index = (int) curr.z;
                     int modified_z = z_index + distance/2.0;
 
                     
-                    if(x_index >= WIDTH || y_index >= HEIGHT || modified_z < 0 || modified_z > distance){ //out of bounds, therefore no point
+                    if(x_index >= WIDTH || y_index >= HEIGHT ){ //out of bounds, therefore no point
                         break;
                     }
                     

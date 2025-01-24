@@ -274,15 +274,15 @@ vec3 normal(vec3 vert1, vec3 vert2, vec3 vert3){
 //angle between two vectors
 vec3 v_angle(vec3 vert1, vec3 vert2){
     vec3 dir;
-    dir.x = vert1.x - vert2.x;
-    dir.y = vert1.y - vert2.y;
-    dir.z = vert1.z - vert2.z;
+    dir.x = vert2.x -vert1.x;
+    dir.y = vert2.y - vert1.y;
+    dir.z = vert2.z - vert1.z;
 
     //printf("%f %f %f ", dir.x, dir.y, dir.z);
     float inverse_norm = fast_inRoot(dot(dir, dir));
-    dir.x = ((int) dir.x * inverse_norm * 1000)/1000.0;
-    dir.y = ((int) dir.y * inverse_norm * 1000)/1000.0;
-    dir.z = ((int) dir.z * inverse_norm * 1000)/1000.0;
+    dir.x = dir.x * inverse_norm;
+    dir.y = dir.y * inverse_norm;
+    dir.z = dir.z * inverse_norm;
 
     return dir;
 }

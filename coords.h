@@ -45,13 +45,24 @@ vec3 toPixel(vec3* vertex, int width, int height){
 
 //turns pixel coords to terminal coords
 vec3 toTerminal(vec3* pixel, int width, int height){
-    vec3 terminal;
+    vec3 terminal; 
     terminal.x = (int) pixel->x + width/2;
-    terminal.y = (int) abs(pixel->y - height/2);
-    terminal.z = pixel->z;
+    terminal.y = (int) -(pixel->y - height/2);
+    terminal.z = (int) pixel->z;
     terminal.l = pixel->l;
 
     return terminal;
+}
+
+vec3 revert(vec3 point, int WIDTH, int HEIGHT){
+    vec3 new_p;
+    new_p.x = point.x - WIDTH/2;
+    new_p.y = -(point.x - HEIGHT/2);
+    new_p.z = point.z;
+    new_p.l = point.l;
+
+    return new_p;
+
 }
 
 #endif
