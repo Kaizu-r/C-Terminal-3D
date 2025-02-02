@@ -51,7 +51,6 @@ vec3 toTerminal(vec3 pixel, int width, int height){
     terminal.y =  (pixel.y + 1);
     terminal.y *= 0.5 * height;
     terminal.z = (int) pixel.z;
-    terminal.l = pixel.l;
 
     return terminal;
 }
@@ -61,8 +60,7 @@ vec3 revert(vec3 point, int WIDTH, int HEIGHT){
     new_p.x = point.x - WIDTH/2;
     new_p.y = -(point.x - HEIGHT/2);
     new_p.z = point.z;
-    new_p.l = point.l;
-
+    
     return new_p;
 
 }
