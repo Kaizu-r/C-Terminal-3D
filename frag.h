@@ -28,10 +28,11 @@ void resetFrag(float** frag, int WIDTH, int HEIGHT){
     }
 }
 
+//outdated
 void setFrag(vec3 points[], int point_len, float** frag, int WIDTH, int HEIGHT){
     for(int i = 0; i < point_len; i++){
         if(points[i].x >= 0 && points[i].x < WIDTH && points[i].y >= 0 && points[i].y < HEIGHT){
-            frag[(int) points[i].x][(int) points[i].y] = points[i].l;
+            //frag[(int) points[i].x][(int) points[i].y] = points[i].l;
         }
     }
 }
