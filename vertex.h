@@ -25,7 +25,8 @@ typedef struct triangle{
 }tri;
 
 typedef struct Mesh{
-    tri* poly;
+    vec3* vert;
+    int* index;
 }mesh;
 
 
