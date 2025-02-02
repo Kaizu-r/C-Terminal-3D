@@ -9,7 +9,7 @@
 
 
 //draw line in terms of x (bresenham algo)
-void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT){
+void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT, float l){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     int dz = vert2.z - vert1.z;
@@ -36,7 +36,7 @@ void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT)
     for(int i = 0; i <= n; i++){
         if(y >= 0 && i + (int) vert1.x >= 0
         && y < HEIGHT && i + (int)vert1.x < WIDTH)
-            frag[i + (int) vert1.x][y] = vert1.l;
+            frag[i + (int) vert1.x][y] = l;
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
@@ -53,7 +53,7 @@ void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT)
     }
 }
 
-void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT){
+void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT, float l){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     int dz = vert2.z - vert1.z;
@@ -90,7 +90,7 @@ void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT
     for(int i = 0; i <= n; i++){
         if(x >= 0 && i + (int) vert1.y >= 0
         && x < WIDTH && i + (int) vert1.y < HEIGHT)
-            frag[x][i + (int) vert1.y] = vert1.l;
+            frag[x][i + (int) vert1.y] = l;
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
@@ -108,7 +108,7 @@ void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT
 
 }
 
-void lineDraw(vec3 vert1, vec3 vert2, float **frag, int WIDTH, int HEIGHT){
+void lineDraw(vec3 vert1, vec3 vert2, float **frag, int WIDTH, int HEIGHT, float l){
     int x0 = vert1.x;
     int y0 = vert1.y;
     int x1 = vert2.x;
@@ -117,15 +117,15 @@ void lineDraw(vec3 vert1, vec3 vert2, float **frag, int WIDTH, int HEIGHT){
     int m = abs(y0 - y1);
     if(m < n){
         if(x0 > x1)
-            lineLow(vert2, vert1, frag, n, WIDTH, HEIGHT);
+            lineLow(vert2, vert1, frag, n, WIDTH, HEIGHT, l);
         else
-            lineLow(vert1, vert2, frag, n, WIDTH, HEIGHT);
+            lineLow(vert1, vert2, frag, n, WIDTH, HEIGHT, l);
     }
     else{
         if(y0 > y1)
-            lineHigh(vert2, vert1, frag, m, WIDTH, HEIGHT);
+            lineHigh(vert2, vert1, frag, m, WIDTH, HEIGHT, l);
         else
-            lineHigh(vert1, vert2, frag, m, WIDTH, HEIGHT);
+            lineHigh(vert1, vert2, frag, m, WIDTH, HEIGHT, l);
     }
 }
 
@@ -187,7 +187,7 @@ void emit_light(vec3 points[], int point_len, vec3 world[], int world_len, vec3 
                     }
                     
                     if(world_points[x_index][y_index][modified_z] != -1){   //valid point
-                        points[index].l = 0.355;
+                        //points[index].l = 0.355;
                         //printf("x");
                         break;
                     }
@@ -210,15 +210,15 @@ void emit_light(vec3 points[], int point_len, vec3 world[], int world_len, vec3 
 
 
 
-void drawTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT){
+void drawTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float l){
     
-    lineDraw(tri1.v1, tri1.v2, frag, WIDTH, HEIGHT);
-    lineDraw(tri1.v2, tri1.v3, frag, WIDTH, HEIGHT);
-    lineDraw(tri1.v3, tri1.v1, frag, WIDTH, HEIGHT);
+    lineDraw(tri1.v1, tri1.v2, frag, WIDTH, HEIGHT, l);
+    lineDraw(tri1.v2, tri1.v3, frag, WIDTH, HEIGHT, l);
+    lineDraw(tri1.v3, tri1.v1, frag, WIDTH, HEIGHT, l);
 
 }
 
-void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT){
+void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
     //sort points 
     vec3 p0, p1, p2;
     p0 = tri1.v1;
@@ -238,27 +238,32 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT){
     n = abs(p1.y - p2.y);
     l = abs(p0.y - p2.y);
 
-    int x01[m];
-    int x12[n];
-    int x02[l];
+    float x01[m];
+    float x12[n];
+    float x02[l];
 
     //interpolate the points
     interpolate(x01, m, p0.y, p0.x, p1.y, p1.x);
     interpolate(x12, n, p1.y, p1.x, p2.y, p2.x);
     interpolate(x02, l, p0.y, p0.x, p2.y, p2.x);
 
+    for(int i = p0.y; i <= p2.y; i++){
+        frag[(int) x02[i - (int)p0.y]][i] = c;
+    }
     m--;    //remove last point
     int o = m + n;
-    int x012[o];
+    float x012[o];
     //concat points
     int i = 0, j = 0, k = 0;
-    while(j < m)
+    while(j < m && i < o)
         x012[i++] = x01[j++];
-    while( k < n)
+    i--;
+    while( k < n && i < o)
         x012[i++] = x12[k++];
 
     //find left and right
-    int* left, * right;
+    /*
+    float* left = NULL, * right = NULL;
     int middle = l/2;
     if(x02[middle] < x012[middle]){
         left = x02;
@@ -267,14 +272,13 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT){
     else{
         left = x012;
         right = x02;
-    }
+    }*/
 
-    //draw segments 
-    for(int i = p0.y; i < p2.y; i++){
-        for(int j = left[i - (int)p0.y]; j <= right[i - (int) p0.y]; j++){
-            if(i >= 0 && j >= 0 && i < HEIGHT && j < WIDTH)
-                frag[j][i] = p0.l;
-        }
+    //draw segments
+    
+    for(int i = (int) p0.y, j = 0; i <= (int) p2.y; j++, i++){
+        //frag[(int) x012[i - (int) p0.y]][i] = c;
+        //frag[(int) x02[j]][i] = c;
     }
 }
 
