@@ -18,6 +18,15 @@ typedef struct vector2{
 typedef struct mat{
     float matrix[3][3];
 }mat3;
+typedef struct triangle{
+    vec3 v1;
+    vec3 v2;
+    vec3 v3; 
+}tri;
+
+typedef struct Mesh{
+    tri* poly;
+}mesh;
 
 
 
