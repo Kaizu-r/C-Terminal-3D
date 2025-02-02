@@ -44,12 +44,12 @@ vec3 toPixel(vec3* vertex, int width, int height){
 }
 
 //turns pixel coords to terminal coords
-vec3 toTerminal(vec3* pixel, int width, int height){
+vec3 toTerminal(vec3 pixel, int width, int height){
     vec3 terminal; 
-    terminal.x = (int) pixel->x + width/2;
-    terminal.y = (int) -(pixel->y - height/2);
-    terminal.z = (int) pixel->z;
-    terminal.l = pixel->l;
+    terminal.x = (int) pixel.x + width/2;
+    terminal.y = (int) -(pixel.y - height/2);
+    terminal.z = (int) pixel.z;
+    terminal.l = pixel.l;
 
     return terminal;
 }
