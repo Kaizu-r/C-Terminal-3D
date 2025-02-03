@@ -23,7 +23,7 @@ float ** makeFrag(int WIDTH, int HEIGHT){
 void resetFrag(float** frag, int WIDTH, int HEIGHT){
     for(int i = 0; i < WIDTH; i++){
         for(int j = 0; j < HEIGHT; j++){
-            frag[i][j] = 0.36;
+            frag[i][j] = 0.7;
         }
     }
 }
