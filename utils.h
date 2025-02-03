@@ -346,7 +346,7 @@ void interpolate(float res[], int n, float x0, float y0, float x1, float y1){
         return;
     }
 
-    float slope = (y1 - y0)/n;
+    float slope = (y1 - y0)/(float) n;
     for(int i = 0; i < n; i++){
         res[i] = y0 + (i*slope);
     }
