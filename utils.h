@@ -80,13 +80,7 @@ mat3 matTransform(mat3 matx, mat3 maty, mat3 matz){
 }
 
 float dot(vec3 vec1, vec3 vec2){
-    //scale them to small
-    vec1.x /= 100;
-    vec1.y /= 100;
-    vec1.z /= 100;
-    vec2.x /= 100;
-    vec2.y /= 100;
-    vec2.z /= 100;
+
     float prod = (vec1.x * vec2.x) + (vec1.y * vec2.y) + (vec1.z * vec2.z);
     return prod;
 }
@@ -121,30 +115,36 @@ void model(vec3 vert[], int size, vec3 deg){
 
 
 //creates the projected coordinates  
-void proj(vec3 vert[], int size, int far, int near, int fov, int WIDTH, int HEIGHT){
+void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
 
-    float s = 1/tan(fov/2);
-    float a = WIDTH/HEIGHT;
-
-    for(int i = 0; i < size; i++){
+    float s = 1.0/tan(fov * 0.5 / 180.0 * 3.14);
+    float a =WIDTH/HEIGHT;
         
         //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
         // 
 
-        float sz = vert[i].z * 1/(far - near) - (near)/(far - near);
-        float sx = (vert[i].x * (s) * a) * (1 - sz);
-        float sy = (vert[i].y * (s)) * (1 - sz);
+    float sz = vert->z * far/(far - near) - (near * far)/(far - near);
+    float sx = (vert->x * (s) * a);
+    float sy = (vert->y * (s));
+    float w = vert->z;
 
-        vert[i].x = sx;
-        vert[i].y = sy;
-        //vert[i].z = sz;
+    if(w!= 0.0){
+        sx /=w; sy /=w; sz/= w; 
+    }
+
+    vert->x = sx;
+    vert->y = sy;
+    vert->z = sz;
        
         //vert[i].z = vert[i].z * projection.matrix[2][2] - (far*near)/(far - near);
        
-    } 
+     
 
 }
 
+float precision(float num, float factor){
+    return ((int) num * factor)/factor;
+}
 
 
 //translates the vertex coords. Essentially, we move the world
@@ -160,7 +160,7 @@ void scale(vec3 vert[], int size, float factor){
     for(int i = 0; i < size; i++){
         vert[i].x *= factor;
         vert[i].y *= factor;
-        vert[i].z = vert[i].z * factor;;
+        vert[i].z *= factor;
     }
 }
 
@@ -269,19 +269,31 @@ vec3 normal(vec3 vert1, vec3 vert2, vec3 vert3){
     norm.y = A.z * B.x - A.x * B.z;
     norm.z = A.x * B.y - A.y * B.x;
 
+
+
+    float inverse_root = fast_inRoot(norm.x*norm.x + norm.y*norm.y + norm.z * norm.z);
     
+    norm.x *= inverse_root;
+    norm.y *= inverse_root;
+    norm.z *= inverse_root;
 
     return norm;
 }
 
 //angle between two vectors
-float v_angle(vec3 vert1, vec3 vert2){
-    
-    float norms = sqrt(dot(vert1, vert1)) * sqrt(dot(vert2, vert2));
-    printf("%f ",norms);
-    float prod = dot(vert1, vert2);
-    printf("%f ",prod);
-    return acos(prod/norms);
+vec3 v_angle(vec3 vert1, vec3 vert2){
+    vec3 dir;
+    dir.x = vert2.x -vert1.x;
+    dir.y = vert2.y - vert1.y;
+    dir.z = vert2.z - vert1.z;
+
+    //printf("%f %f %f ", dir.x, dir.y, dir.z);
+    float inverse_norm = fast_inRoot(dot(dir, dir));
+    dir.x = dir.x * inverse_norm;
+    dir.y = dir.y * inverse_norm;
+    dir.z = dir.z * inverse_norm;
+
+    return dir;
 }
 
 void merge_models(vec3 mod1[], vec3 mod2[], vec3 res[], int ind1[], int ind2[], int ind_res[], int modSize1, int modSize2, int indSize1, int indSize2){
@@ -304,7 +316,43 @@ void merge_models(vec3 mod1[], vec3 mod2[], vec3 res[], int ind1[], int ind2[], 
     }
 }
 
-//matrix transformations
+mesh meshBuild(vec3 vertices[], int index[]){
+    mesh m;
+    m.vert = vertices;
+    m.index = index;
+
+    return m;
+}
+
+tri triangleBuild(vec3 vert[], int index[], int offset){
+    tri tri1;
+    tri1.v1 = vert[index[offset*3]];
+    tri1.v2 = vert[index[offset*3 + 1]];
+    tri1.v3 = vert[index[offset*3 + 2]];
+
+    return tri1;
+}
+
+void swap(vec3 *p1, vec3 *p2){
+    vec3 temp = *p1;
+    *p1 = *p2;
+    *p2 = temp;
+}
+
+
+//x independent, y dependent
+void interpolate(float res[], int n, float x0, float y0, float x1, float y1){
+    if(n == 0){
+        return;
+    }
+
+    float slope = (y1 - y0)/(float) n;
+    for(int i = 0; i < n; i++){
+        res[i] = y0 + (i*slope);
+    }
+}
+
+
 
 
 
