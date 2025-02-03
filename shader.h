@@ -233,8 +233,8 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
         swap(&p2, &p1);
 
     //scale points by a bit
-    p0.x*=1.01; p1.x*=1.01; p2.x *=1.01;
-    p0.y*=1.01; p1.y*=1.01; p2.y *=1.01;
+    p0.x*=1.030625; p1.x*=1.030625; p2.x *=1.030625;
+    p0.y*=1.030625; p1.y*=1.030625; p2.y *=1.030625;
 
     //
     int m, n, l;
@@ -281,17 +281,16 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
         left = x012;
         right = x02;
     }
-    //interpolated points
-    for(int i = 0; i < o; i++){
-        frag[(int) left[i]][i + (int) p0.y] = 0.1;
-        frag[(int) right[i]][i + (int) p0.y] = 0.1;
-    }
+    //draw interpolated triangles
+    lineDraw(p0, p1, frag, WIDTH, HEIGHT, c);
+    lineDraw(p1, p2, frag, WIDTH, HEIGHT, c);
+    lineDraw(p0, p2, frag, WIDTH, HEIGHT, c);
 
     for(int i = 0; i < o; i++){
         int len = abs(right[i] - left[i]);
         for(int j = 0; j <= len; j++){
             if(i < HEIGHT && j < WIDTH)
-                frag[j + (int)left[i]][(i + (int) p0.y) + 1] = c;
+                frag[j + (int)left[i]][(i + (int) p0.y)] = c;
         }
     }
     
