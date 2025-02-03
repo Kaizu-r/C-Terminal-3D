@@ -232,6 +232,10 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
     if(p2.y < p1.y)
         swap(&p2, &p1);
 
+    //scale points by a bit
+    p0.x*=1.01; p1.x*=1.01; p2.x *=1.01;
+    p0.y*=1.01; p1.y*=1.01; p2.y *=1.01;
+
     //
     int m, n, l;
     m = abs(p0.y - p1.y);
@@ -247,24 +251,28 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
     interpolate(x12, n, p1.y, p1.x, p2.y, p2.x);
     interpolate(x02, l, p0.y, p0.x, p2.y, p2.x);
 
-    for(int i = p0.y; i <= p2.y; i++){
-        frag[(int) x02[i - (int)p0.y]][i] = c;
-    }
-    m--;    //remove last point
+    //testing
+    
+    
+    //m--;    //remove last point
     int o = m + n;
     float x012[o];
-    //concat points
+    //concat points //causes corruption of points
     int i = 0, j = 0, k = 0;
-    while(j < m && i < o)
-        x012[i++] = x01[j++];
-    i--;
-    while( k < n && i < o)
-        x012[i++] = x12[k++];
+
+    while(i < o){
+        while(j < m)
+            x012[i++] = x01[j++];
+        while(k<n)
+            x012[i++] = x12[k++];
+    }
+
 
     //find left and right
-    /*
+    
     float* left = NULL, * right = NULL;
     int middle = l/2;
+    
     if(x02[middle] < x012[middle]){
         left = x02;
         right = x012;
@@ -272,14 +280,22 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
     else{
         left = x012;
         right = x02;
-    }*/
-
-    //draw segments
-    
-    for(int i = (int) p0.y, j = 0; i <= (int) p2.y; j++, i++){
-        //frag[(int) x012[i - (int) p0.y]][i] = c;
-        //frag[(int) x02[j]][i] = c;
     }
+    //interpolated points
+    for(int i = 0; i < o; i++){
+        frag[(int) left[i]][i + (int) p0.y] = 0.1;
+        frag[(int) right[i]][i + (int) p0.y] = 0.1;
+    }
+
+    for(int i = 0; i < o; i++){
+        int len = abs(right[i] - left[i]);
+        for(int j = 0; j <= len; j++){
+            if(i < HEIGHT && j < WIDTH)
+                frag[j + (int)left[i]][(i + (int) p0.y) + 1] = c;
+        }
+    }
+    
+    
 }
 
 
