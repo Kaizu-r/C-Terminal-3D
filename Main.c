@@ -50,17 +50,17 @@ int main(){
 
 
     //setup rotation here
-    vec3 model_rotation = {10,10,10};
+    vec3 model_rotation = {10,0,0};
 
     //set up initial rotation
-    vec3 model_init_rotation = {0, 0, 0};
+    vec3 model_init_rotation = {0, 30, 0};
 
 
     //setup translation here
     vec3 model_translation = {0, 0, 3.0};
 
     //light
-    vec3 light = {40, -80, 0};
+    vec3 light = {0, 1, 0};
     //light = toTerminal(&light, WIDTH, HEIGHT);
 
     //setup camera here
@@ -78,7 +78,7 @@ int main(){
 
     vec3 view_rotation = {0, 0, 0};
     vec3 view_translation = {0, 0, 0};
-    vec3 total_rotation = {0,0,0};
+    vec3 total_rotation = model_init_rotation;
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 terminal[n];
     vec3 modVert[n];
@@ -155,8 +155,19 @@ int main(){
                 tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
                 tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
                 tri2.v3 = toTerminal(tri2.v3, WIDTH, HEIGHT);
-                fillTriangle(tri2, frag, WIDTH, HEIGHT, -0.1);
-                drawTriangle(tri2, frag, WIDTH, HEIGHT, 0.2);
+
+                float light_value;
+
+                //normalize light
+                float light_len = fast_inRoot(light.x*light.x + light.y*light.y + light.z*light.z);
+                light.x *= light_len;
+                light.y *= light_len;
+                light.z *= light_len;
+
+                light_value = dot(norm, light) * -1;
+
+                fillTriangle(tri2, frag, WIDTH, HEIGHT, light_value);
+                drawTriangle(tri2, frag, WIDTH, HEIGHT, light_value);
             }
         }
         
