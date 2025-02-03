@@ -27,25 +27,25 @@ void sortVert(vec3 vert[], int n){
 char zPrint(float z){
 
     //textures sheesh
-    if(z < -0.2)
+    if(z < -0.8)
         return '@';
-    else if(z < -0.15)
+    else if(z < -0.6)
         return '&';
-    else if(z < -0.1)
+    else if(z < -0.4)
         return 'B';
-    else if(z < -0.05)
+    else if(z < -0.2)
         return 'Z';
-    else if(z < -0.0)
+    else if(z < -0.1)
         return 'Q';
-    else if(z < 0.05)
-        return 'X';
     else if(z < 0.1)
-        return '|';
-    else if(z < 0.15)
-        return '<';
+        return 'X';
     else if(z < 0.2)
+        return '|';
+    else if(z < 0.4)
+        return '<';
+    else if(z < 0.6)
        return ':';
-    else if(z < 0.35)
+    else if(z < 0.8)
         return '\'';
     else
         return ' ';
