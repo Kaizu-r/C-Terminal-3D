@@ -136,7 +136,6 @@ void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
     vert->y = sy;
     vert->z = sz;
        
-        //vert[i].z = vert[i].z * projection.matrix[2][2] - (far*near)/(far - near);
        
      
 
@@ -190,7 +189,7 @@ void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans){
 }
 
 //custom merge sort algo
-void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
+void merge3v(vec3 vertices[], int i1, int j1, int i2, int j2){
     int start1, start2, k;
     vec3 temp[j2 + 1];
     
@@ -228,6 +227,61 @@ void merge(vec3 vertices[], int i1, int j1, int i2, int j2){
 
 }
 
+void mergesort3v(vec3 vertices[], int i, int j){
+    if(i >= j)
+        return;
+    int mid = (i + j)/2;
+    mergesort3v(vertices, i, mid);
+    mergesort3v(vertices, mid+1, j);
+    merge3v(vertices, i, mid, mid+1, j);
+}
+
+//merge sort for v2
+void merge2v(vec2 vertices[], int i1, int j1, int i2, int j2){
+    int start1, start2, k;
+    vec2 temp[j2 + 1];
+    
+    start1 =  i1;
+    start2 = i2;
+    k = 0;
+    //compare and copy to temp
+    while(start1 <= j1 && start2 <= j2){
+        //sort by y and x ascendingly, then descending for z
+        if(vertices[start1].y < vertices[start2].y)
+            temp[k++] = vertices[start1++]; 
+        else if(vertices[start2].y < vertices[start1].y)
+            temp[k++] = vertices[start2++]; 
+        else if(vertices[start1].x < vertices[start2].x) //now we check for lesser x values if y is equal
+            temp[k++] = vertices[start1++];
+        else if(vertices[start2].x < vertices[start1].x)
+            temp[k++] = vertices[start2++];
+        else
+            temp[k++] = vertices[start2++];
+    }
+
+    //copy the rest to temp
+    while(start1 <= j1){
+        temp[k++] = vertices[start1++];
+    }
+    while(start2 <=j2){
+        temp[k++] = vertices[start2++];
+    }
+
+    //copy back to array
+    for(int i = i1, j = 0; i <= j2; i++, j++)
+        vertices[i] = temp[j];
+
+}
+
+void mergesort2v(vec2 vertices[], int i, int j){
+    if(i >= j)
+        return;
+    int mid = (i + j)/2;
+    mergesort3v(vertices, i, mid);
+    mergesort3v(vertices, mid+1, j);
+    merge3v(vertices, i, mid, mid+1, j);
+}
+
 float fast_inRoot(float number){
     long i;
 	float x2, y;
@@ -244,14 +298,7 @@ float fast_inRoot(float number){
 	return y;
 }
 
-void mergesort(vec3 vertices[], int i, int j){
-    if(i >= j)
-        return;
-    int mid = (i + j)/2;
-    mergesort(vertices, i, mid);
-    mergesort(vertices, mid+1, j);
-    merge(vertices, i, mid, mid+1, j);
-}
+
 
 float vect_distance(vec3 vec1, vec3 vec2){
     vec3 diff = {vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z}; 
@@ -351,6 +398,8 @@ void interpolate(float res[], int n, float x0, float y0, float x1, float y1){
         res[i] = y0 + (i*slope);
     }
 }
+
+
 
 
 
