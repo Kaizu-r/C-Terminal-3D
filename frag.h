@@ -8,10 +8,16 @@
 #include "utils.h"
 
 
+typedef struct{
+    int flag;   //to see if current frag is computed
+    vec3 coord;
+    vec3 color
+} Frag;
 
-float ** makeFrag(int WIDTH, int HEIGHT){
-    float *values = (float*) calloc(WIDTH * HEIGHT, sizeof(float));
-    float ** frag = (float**) malloc(WIDTH * sizeof(float*));
+
+Frag ** makeFrag(int WIDTH, int HEIGHT){
+    Frag *values = (Frag*) calloc(WIDTH * HEIGHT, sizeof(Frag));
+    Frag ** frag = (Frag**) malloc(WIDTH * sizeof(Frag*));
 
     for(int i = 0; i < WIDTH; i++){
         frag[i] = values + i*HEIGHT;
@@ -20,10 +26,10 @@ float ** makeFrag(int WIDTH, int HEIGHT){
     return frag;
 }
 
-void resetFrag(float** frag, int WIDTH, int HEIGHT){
+void resetFrag(Frag** frag, int WIDTH, int HEIGHT){
     for(int i = 0; i < WIDTH; i++){
         for(int j = 0; j < HEIGHT; j++){
-            frag[i][j] = 0.7;
+            frag[i][j].flag = 0;
         }
     }
 }
