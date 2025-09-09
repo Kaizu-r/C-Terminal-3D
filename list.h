@@ -6,7 +6,7 @@
 
 
 typedef struct list_node{
-    vec2 v;
+    vec3 v;
     struct list_node * next;
     struct list_node* prev;
 
@@ -18,7 +18,7 @@ typedef struct List{
     int size;
 }List;
 
-List_node* createListNode(vec2 v){
+List_node* createListNode(vec3 v){
     List_node* m = (List_node*) malloc (sizeof(List_node));
     m->v = v;
     m->next = NULL;
@@ -54,7 +54,7 @@ void deleteList(List** m){
 
 }
 
-void pushFront(List **m, vec2 v){
+void pushFront(List **m, vec3 v){
     List_node* n = createListNode(v);
     (*m)->size++;
 
@@ -71,7 +71,7 @@ void pushFront(List **m, vec2 v){
 
 }
 
-void pushBack(List **m, vec2 v){
+void pushBack(List **m, vec3 v){
     List_node* n = createListNode(v);
     (*m)->size++;
 
