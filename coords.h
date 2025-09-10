@@ -47,10 +47,14 @@ vec3 toPixel(vec3* vertex, int width, int height){
 vec3 toTerminal(vec3 pixel, int width, int height){
     vec3 terminal; 
     terminal.x = (pixel.x + 1);
-    terminal.x *= 0.5 * width;
+    terminal.x *= (0.5 * width);
     terminal.y =  (pixel.y + 1);
-    terminal.y *= 0.5 * height;
+    terminal.y *= (0.5 * height);
     terminal.z = (int) pixel.z;
+
+    terminal.x = floor(terminal.x);
+    terminal.y = floor(terminal.y);
+    terminal.z = floor(terminal.z);
 
     return terminal;
 }
