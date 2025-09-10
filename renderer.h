@@ -17,35 +17,35 @@
 
 
 
-//implement our sorter
-void sortVert(vec3 vert[], int n){
-    mergesort(vert, 0, n-1);
+
+float lightValue(vec3 col){
+    //normalize col
+    vec3 newCol = normalize(col);
+    return (newCol.x + newCol.y + newCol.z)/3.0;
 }
 
-
-
-char zPrint(float z){
+char toAscii(float z){
 
     //textures sheesh
-    if(z < -0.8)
+    if(z > 1)
         return '@';
-    else if(z < -0.6)
+    else if(z > 0.9)
         return '&';
-    else if(z < -0.4)
+    else if(z > 0.8)
         return 'B';
-    else if(z < -0.2)
+    else if(z > 0.7)
         return 'Z';
-    else if(z < -0.1)
+    else if(z > 0.6)
         return 'Q';
-    else if(z < 0.1)
+    else if(z > 0.5)
         return 'X';
-    else if(z < 0.2)
+    else if(z > 0.4)
         return '|';
-    else if(z < 0.4)
+    else if(z > 0.3)
         return '<';
-    else if(z < 0.6)
+    else if(z > 0.2)
        return ':';
-    else if(z < 0.8)
+    else if(z > 0.1)
         return '\'';
     else
         return ' ';
@@ -66,11 +66,17 @@ char zPrint(float z){
 
 
 //more in line with traditional rendering
-void render(float **frag, int WIDTH, int HEIGHT, char screen[]){
+void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]){
     int k = 0;
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
-            screen[k++] = zPrint(frag[j][i]);
+            if(frag[fragIndex( j, i, WIDTH, HEIGHT)].flag){
+                vec3 col = frag[fragIndex(j, i, WIDTH, HEIGHT)].color;
+                screen[k++] = toAscii(col.z * 0.5);
+            }
+            else
+                screen[k++] = ' ';
+            
         }
         screen[k++] = '\n';
     }

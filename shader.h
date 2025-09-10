@@ -6,10 +6,12 @@
 #include "coords.h"
 #include "vertex.h"
 #include "utils.h"
+#include "list.h"
+#include "frag.h"
 
 
 //draw line in terms of x (bresenham algo)
-void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT, float l){
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     int dz = vert2.z - vert1.z;
@@ -35,8 +37,10 @@ void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT,
     int z = vert1.z;
     for(int i = 0; i <= n; i++){
         if(y >= 0 && i + (int) vert1.x >= 0
-        && y < HEIGHT && i + (int)vert1.x < WIDTH)
-            frag[i + (int) vert1.x][y] = l;
+        && y < HEIGHT && i + (int)vert1.x < WIDTH){
+            vec3 v = {i + (int) vert1.x, (int) y, z};
+            pushBack(list, v);
+        }
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
@@ -53,7 +57,7 @@ void lineLow(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT,
     }
 }
 
-void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT, float l){
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     int dz = vert2.z - vert1.z;
@@ -89,8 +93,10 @@ void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT
     //loop in reverse so it is sorted in ascending order
     for(int i = 0; i <= n; i++){
         if(x >= 0 && i + (int) vert1.y >= 0
-        && x < WIDTH && i + (int) vert1.y < HEIGHT)
-            frag[x][i + (int) vert1.y] = l;
+        && x < WIDTH && i + (int) vert1.y < HEIGHT){
+            vec3 v = {x, i + (int) vert1.y, (float) z};
+            pushBack(list, v);
+        }
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
@@ -108,7 +114,7 @@ void lineHigh(vec3 vert1, vec3 vert2, float **frag, int n, int WIDTH, int HEIGHT
 
 }
 
-void lineDraw(vec3 vert1, vec3 vert2, float **frag, int WIDTH, int HEIGHT, float l){
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, float l){
     int x0 = vert1.x;
     int y0 = vert1.y;
     int x1 = vert2.x;
@@ -117,107 +123,94 @@ void lineDraw(vec3 vert1, vec3 vert2, float **frag, int WIDTH, int HEIGHT, float
     int m = abs(y0 - y1);
     if(m < n){
         if(x0 > x1)
-            lineLow(vert2, vert1, frag, n, WIDTH, HEIGHT, l);
+            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT, l);
         else
-            lineLow(vert1, vert2, frag, n, WIDTH, HEIGHT, l);
+            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT, l);
     }
     else{
         if(y0 > y1)
-            lineHigh(vert2, vert1, frag, m, WIDTH, HEIGHT, l);
+            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT, l);
         else
-            lineHigh(vert1, vert2, frag, m, WIDTH, HEIGHT, l);
+            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT, l);
     }
 }
 
 
 //no longer usable
-void emit_light(vec3 points[], int point_len, vec3 world[], int world_len, vec3 light, float res, int distance, int WIDTH, int HEIGHT){
-
-    light = toTerminal(light, WIDTH, HEIGHT);
-    sortVert(world, world_len);
-    int a =0, b = 0, c = 0;
-    int screen_points[WIDTH][HEIGHT]; //index of points seen in the screen
-    int world_points[WIDTH][HEIGHT][distance]; //index of starting xy pairs
-    //set point index to -1
-    for(int i = 0; i < WIDTH; i++){
-        for(int j= 0; j < HEIGHT; j++){
-            screen_points[i][j] = -1;
-            for(int k = 0; k < distance; k++){
-                world_points[i][j][k] = -1;
-            }
-            
-        }
-    }
-
-    for(int i = 0; i < point_len; i++){
-            screen_points[(int) points[i].x][(int) points[i].y] = i;    //store index of screen points
-    }
-    for(int i = 0; i < world_len; i++){
-        if(world[i].z + distance/2 >= 0){ //store only within valid distance
-            int new_z = world[i].z + distance/2;
-            if(world_points[(int) world[i].x][(int) world[i].y][new_z] == -1){  //if still fre
-                world_points[(int) world[i].x][(int) world[i].y][new_z] = i;
-            }
-        }
-    }
-
-    for(int i = 0; i < WIDTH; i++){
-        for(int j = 0; j < HEIGHT; j++){
-            if((screen_points[i][j] != -1)){//skip step if no point exists
-                vec3 dir;
-                int index = screen_points[i][j];
-                vec3 curr = points[index];
-                dir = v_angle(curr, light);
-                
-                vec3 orig = curr;
-
-                while(1){
-                    
-                    curr.x += dir.x;
-                    curr.y += dir.y;
-                    curr.z +=  dir.z;
-                    int x_index = (int) curr.x;
-                    int y_index = (int) curr.y;
-                    int z_index = (int) curr.z;
-                    int modified_z = z_index + distance/2.0;
-
-                    
-                    if(x_index >= WIDTH || y_index >= HEIGHT ){ //out of bounds, therefore no point
-                        break;
-                    }
-                    
-                    if(world_points[x_index][y_index][modified_z] != -1){   //valid point
-                        //points[index].l = 0.355;
-                        //printf("x");
-                        break;
-                    }
-                    
-                    
-                }
-            }
-            
-
-
-
-        }
-    }
 
 
 
 
-}
 
-
-
-
-void drawTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float l){
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, float l){
     
-    lineDraw(tri1.v1, tri1.v2, frag, WIDTH, HEIGHT, l);
-    lineDraw(tri1.v2, tri1.v3, frag, WIDTH, HEIGHT, l);
-    lineDraw(tri1.v3, tri1.v1, frag, WIDTH, HEIGHT, l);
+    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT, l);
+    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT, l);
+    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT, l);
 
 }
 
+void fillTriangle(List **list, int WIDTH, int HEIGHT){
+    int len = (*list)->size;
+    vec3 temp[len];
+    //copy contents
+    List_node* p = (*list)->front;
+    int i = 0;
+    while(p != NULL){
+        temp[i++] = p->v;
+        p = p->next;
+    }
+    
+
+    //sort temp array
+    mergesort3v(temp, 0, len - 1);
+
+    
+    for(int i = 0; i < len - 1; i++){
+        
+        if(temp[i].y == temp[i+1].y){
+            int dx = temp[i+1].x - temp[i].x;
+            float dz = temp[i+1].z - temp[i].z;
+            float zstep = (dx == 0) ? 0: (dz/dx);
+
+            for(int j = 1, k = zstep; j < dx; j++, k += zstep ){
+                vec3 v = {temp[i].x + j, temp[i].y, temp[i].z + k};
+                
+                pushBack(list, v);
+            }
+        }
+    }
+    
+
+}
+
+void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
+    List_node * p = list->front;
+    while(p != NULL){
+        vec2 coord = {p->v.x, p->v.y};
+        Frag newFrag;
+        newFrag.coord = p->v;
+        vec3 color = {0, 0, p->v.z};
+        newFrag.color = color;
+
+        int index = fragIndex(coord.x, coord.y, WIDTH, HEIGHT);
+        if(index < 0){
+           p = p->next;
+           continue; 
+        }
+        if(frag[index].flag){
+            frag[index] = (p->v.z < frag[index].color.z) ? newFrag : frag[index];
+        }
+        else{
+            frag[index] = newFrag;
+        }
+        frag[index].flag = 1;
+        p = p->next;
+    }
+}
+
+
+/*
 void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
     //sort points 
     vec3 p0, p1, p2;
@@ -233,8 +226,8 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
         swap(&p2, &p1);
 
     //scale points by a bit
-    p0.x*=1.01; p1.x*=1.01; p2.x *=1.01;
-    p0.y*=1.01; p1.y*=1.01; p2.y *=1.01;
+    p0.x*=1.030625; p1.x*=1.030625; p2.x *=1.030625;
+    p0.y*=1.030625; p1.y*=1.030625; p2.y *=1.030625;
 
     //
     int m, n, l;
@@ -281,22 +274,22 @@ void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
         left = x012;
         right = x02;
     }
-    //interpolated points
-    for(int i = 0; i < o; i++){
-        frag[(int) left[i]][i + (int) p0.y] = 0.1;
-        frag[(int) right[i]][i + (int) p0.y] = 0.1;
-    }
+    //draw interpolated triangles
+    lineDraw(p0, p1, frag, WIDTH, HEIGHT, c);
+    lineDraw(p1, p2, frag, WIDTH, HEIGHT, c);
+    lineDraw(p0, p2, frag, WIDTH, HEIGHT, c);
 
     for(int i = 0; i < o; i++){
         int len = abs(right[i] - left[i]);
         for(int j = 0; j <= len; j++){
             if(i < HEIGHT && j < WIDTH)
-                frag[j + (int)left[i]][(i + (int) p0.y) + 1] = c;
+                frag[j + (int)left[i]][(i + (int) p0.y)] = c;
         }
     }
     
     
 }
+    */
 
 
 
