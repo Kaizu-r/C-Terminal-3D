@@ -277,9 +277,9 @@ void mergesort2v(vec2 vertices[], int i, int j){
     if(i >= j)
         return;
     int mid = (i + j)/2;
-    mergesort3v(vertices, i, mid);
-    mergesort3v(vertices, mid+1, j);
-    merge3v(vertices, i, mid, mid+1, j);
+    mergesort2v(vertices, i, mid);
+    mergesort2v(vertices, mid+1, j);
+    merge2v(vertices, i, mid, mid+1, j);
 }
 
 float fast_inRoot(float number){
@@ -399,6 +399,11 @@ void interpolate(float res[], int n, float x0, float y0, float x1, float y1){
     }
 }
 
+vec3 normalize(vec3 v){
+    float invlen = fast_inRoot(v.x*v.x + v.y*v.y + v.z*v.z);
+    vec3 newv = {v.x * invlen, v.y * invlen, v.z * invlen};
+    return newv;
+}
 
 
 
