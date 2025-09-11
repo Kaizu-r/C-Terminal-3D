@@ -34,6 +34,10 @@
 */
 
 //scales normalized vertex coords to "pixel" coords
+vec3 toPixel(vec3* vertex, int width, int height);
+vec3 toTerminal(vec3 pixel, int width, int height);
+vec3 revert(vec3 point, int WIDTH, int HEIGHT);
+
 vec3 toPixel(vec3* vertex, int width, int height){
     vec3 pixel;
     //truncate

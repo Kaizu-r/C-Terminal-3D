@@ -14,6 +14,10 @@ typedef struct{
     vec3 color;
 } Frag;
 
+Frag * makeFrag(int WIDTH, int HEIGHT);
+int fragIndex(int x, int y, int WIDTH, int HEIGHT);
+Frag getFrag(Frag* frag, int x, int y, int WIDTH, int HEIGHT);
+void resetFrag(Frag* frag, int WIDTH, int HEIGHT);
 
 Frag * makeFrag(int WIDTH, int HEIGHT){
     Frag *frag = (Frag*) malloc(sizeof(Frag) * WIDTH * HEIGHT);  

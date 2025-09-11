@@ -10,6 +10,14 @@
 #include "frag.h"
 
 
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l);
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l);
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, float l);
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, float l);
+void fillTriangle(List **list, int WIDTH, int HEIGHT);
+void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT);
+
+
 //draw line in terms of x (bresenham algo)
 void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l){
     int dx = vert2.x - vert1.x;
@@ -209,87 +217,6 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
     }
 }
 
-
-/*
-void fillTriangle(tri tri1, float **frag, int WIDTH, int HEIGHT, float c){
-    //sort points 
-    vec3 p0, p1, p2;
-    p0 = tri1.v1;
-    p1 = tri1.v2;
-    p2 = tri1.v3;
-
-    if(p1.y < p0.y)
-        swap(&p1, &p0);
-    if(p2.y < p0.y)
-        swap(&p2, &p0);
-    if(p2.y < p1.y)
-        swap(&p2, &p1);
-
-    //scale points by a bit
-    p0.x*=1.030625; p1.x*=1.030625; p2.x *=1.030625;
-    p0.y*=1.030625; p1.y*=1.030625; p2.y *=1.030625;
-
-    //
-    int m, n, l;
-    m = abs(p0.y - p1.y);
-    n = abs(p1.y - p2.y);
-    l = abs(p0.y - p2.y);
-
-    float x01[m];
-    float x12[n];
-    float x02[l];
-
-    //interpolate the points
-    interpolate(x01, m, p0.y, p0.x, p1.y, p1.x);
-    interpolate(x12, n, p1.y, p1.x, p2.y, p2.x);
-    interpolate(x02, l, p0.y, p0.x, p2.y, p2.x);
-
-    //testing
-    
-    
-    //m--;    //remove last point
-    int o = m + n;
-    float x012[o];
-    //concat points //causes corruption of points
-    int i = 0, j = 0, k = 0;
-
-    while(i < o){
-        while(j < m)
-            x012[i++] = x01[j++];
-        while(k<n)
-            x012[i++] = x12[k++];
-    }
-
-
-    //find left and right
-    
-    float* left = NULL, * right = NULL;
-    int middle = l/2;
-    
-    if(x02[middle] < x012[middle]){
-        left = x02;
-        right = x012;
-    }
-    else{
-        left = x012;
-        right = x02;
-    }
-    //draw interpolated triangles
-    lineDraw(p0, p1, frag, WIDTH, HEIGHT, c);
-    lineDraw(p1, p2, frag, WIDTH, HEIGHT, c);
-    lineDraw(p0, p2, frag, WIDTH, HEIGHT, c);
-
-    for(int i = 0; i < o; i++){
-        int len = abs(right[i] - left[i]);
-        for(int j = 0; j <= len; j++){
-            if(i < HEIGHT && j < WIDTH)
-                frag[j + (int)left[i]][(i + (int) p0.y)] = c;
-        }
-    }
-    
-    
-}
-    */
 
 
 
