@@ -10,6 +10,38 @@
 #include "math.h"
 #include <time.h>
 
+float rad(int deg);
+void clear();
+void wait(int waiting);
+mat3 rotateX(float radians);
+mat3 rotateY(float radians);
+mat3 rotateZ(float radians);
+mat3 matMultiply(mat3 mat1, mat3 mat2);
+mat3 matTransform(mat3 matx, mat3 maty, mat3 matz);
+float dot(vec3 vec1, vec3 vec2);
+void model(vec3 vert[], int size, vec3 deg);
+void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT);
+float precision(float num, float factor);
+void translation(vec3 vert[], int size, vec3 trans);
+void scale(vec3 vert[], int size, float factor);
+void scale(vec3 vert[], int size, float factor);
+void view(vec3 vert[], int size, vec3 trans, vec3 rot);
+void camera(vec3 vert[], int size, float focal);
+void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans);
+void merge3v(vec3 vertices[], int i1, int j1, int i2, int j2);
+void mergesort3v(vec3 vertices[], int i, int j);
+void merge2v(vec2 vertices[], int i1, int j1, int i2, int j2);
+void mergesort2v(vec2 vertices[], int i, int j);
+float fast_inRoot(float number);
+float vect_distance(vec3 vec1, vec3 vec2);
+vec3 normal(vec3 vert1, vec3 vert2, vec3 vert3);
+vec3 v_angle(vec3 vert1, vec3 vert2);
+tri triangleBuild(vec3 vert[], int index[], int offset);
+void swap(vec3 *p1, vec3 *p2);
+void interpolate(float res[], int n, float x0, float y0, float x1, float y1);
+vec3 normalize(vec3 v);
+
+
 //degrees to radians convertion
 float rad(int deg){
     float y = deg * M_PI/180;
@@ -112,8 +144,6 @@ void model(vec3 vert[], int size, vec3 deg){
     }
 }
 
-
-
 //creates the projected coordinates  
 void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
 
@@ -144,7 +174,6 @@ void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
 float precision(float num, float factor){
     return ((int) num * factor)/factor;
 }
-
 
 //translates the vertex coords. Essentially, we move the world
 void translation(vec3 vert[], int size, vec3 trans){
@@ -343,33 +372,6 @@ vec3 v_angle(vec3 vert1, vec3 vert2){
     return dir;
 }
 
-void merge_models(vec3 mod1[], vec3 mod2[], vec3 res[], int ind1[], int ind2[], int ind_res[], int modSize1, int modSize2, int indSize1, int indSize2){
-    int j = 0, k = 0;
-    int i = 0;
-    while(i < modSize1){
-        res[j++] = mod1[i++]; 
-    }
-    i = 0;
-    while(i < modSize2){
-        res[j++] = mod2[i++]; 
-    }
-    i = 0;
-    while(i < indSize1){
-        ind_res[k++] = ind1[i++];
-    }
-    i = 0;
-    while(i < indSize2){
-        ind_res[k++] = ind2[i++] + modSize1;
-    }
-}
-
-mesh meshBuild(vec3 vertices[], int index[]){
-    mesh m;
-    m.vert = vertices;
-    m.index = index;
-
-    return m;
-}
 
 tri triangleBuild(vec3 vert[], int index[], int offset){
     tri tri1;

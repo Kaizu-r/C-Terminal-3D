@@ -9,13 +9,9 @@
 #include "vertex.h"
 
 
-/*
-    list of z value ascii
-    
-    .     :     <   |   X   Q   Z   *   &   @  
-*/
-
-
+float lightValue(vec3 col);
+char toAscii(float z);
+void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]);
 
 
 float lightValue(vec3 col){
