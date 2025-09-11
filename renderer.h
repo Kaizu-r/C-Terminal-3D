@@ -7,11 +7,15 @@
 #include "coords.h"
 #include "utils.h"
 #include "vertex.h"
+#include "shader.h"
+#include "list.h"
 
 
 float lightValue(vec3 col);
 char toAscii(float z);
+void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, float far, float fov, vec3 cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
 void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]);
+
 
 
 float lightValue(vec3 col){
@@ -48,17 +52,39 @@ char toAscii(float z){
 
 }
 
-//store only valid points in z
-/*
-    pseudo time!!!
-    given this array of vec3 points
-    [A, B, C, D, E, F, .........]
-    recall that array is arranged in ascending y and x and descending z. this means that we move k until i at x and y != k at x and y
-    increment j and then move i to k
-   
-*/
+void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, float far, float fov, vec3 cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
+        for(int i = 0; i < shapes; i++){
+            tri tri1 = triangleBuild(vertices, indices, i);
 
+            vec3 norm = normal(tri1.v1, tri1.v2, tri1.v3);
 
+            vec3 distance_to_cam = {tri1.v1.x - cam.x, tri1.v1.y - cam.y, tri1.v1.z - cam.z};
+            if(dot(norm, distance_to_cam) < 0){
+                tri tri2 = tri1;
+                proj(&tri2.v1, far, near, fov, WIDTH, HEIGHT);
+                proj(&tri2.v2, far, near, fov, WIDTH, HEIGHT);
+                proj(&tri2.v3, far, near, fov, WIDTH, HEIGHT);
+
+                tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
+                tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
+                tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
+
+                List * list = createList();
+                
+                drawTriangle(tri2, &list, WIDTH, HEIGHT);
+                
+                
+                fillTriangle(&list, WIDTH, HEIGHT);
+                placeFrag(frag, list, WIDTH, HEIGHT);
+        
+                
+                
+            }
+        }
+        render(frag, WIDTH, HEIGHT, screen);
+        resetFrag(frag, WIDTH, HEIGHT);
+
+}
 
 
 //more in line with traditional rendering
