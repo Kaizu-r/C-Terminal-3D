@@ -6,9 +6,9 @@
 #include "shader.h"
 #include "utils.h"
 
-#define WIDTH 120
-#define HEIGHT 60
-#define FPS 60
+#define WIDTH 100
+#define HEIGHT 50
+#define FPS 24
 
 int main(){
     
@@ -50,17 +50,17 @@ int main(){
 
 
     //setup rotation here
-    vec3 model_rotation = {10,0,0};
+    vec3 model_rotation = {0, 5, 0};
 
     //set up initial rotation
-    vec3 model_init_rotation = {0, 30, 0};
+    vec3 model_init_rotation = {45, 45, 45};
 
 
     //setup translation here
     vec3 model_translation = {0, 0, 3.0};
 
     //light
-    vec3 light = {0, 1, 0};
+    vec3 light = {0, 10, -10};
     //light = toTerminal(&light, WIDTH, HEIGHT);
 
     //setup camera here
@@ -85,14 +85,13 @@ int main(){
 
     vec3 projection[n];
 
-    float **frag = makeFrag(WIDTH, HEIGHT);
 
     //initialize the screen
     char screen[HEIGHT * WIDTH + HEIGHT];
     int point_len = HEIGHT * WIDTH * 1.5;
+    Frag* frag = makeFrag(WIDTH, HEIGHT);
     //vec3 *points;
     while(1){
-        resetFrag(frag, WIDTH, HEIGHT);
         
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
@@ -104,27 +103,6 @@ int main(){
         total_rotation.y += model_rotation.y;
         total_rotation.z += model_rotation.z;
 
-        //for printing
-        if(total_rotation.x > 360){
-            total_rotation.x -= 360;
-        }
-        if(total_rotation.x < -360)
-            total_rotation.x += 360;
-        if(total_rotation.y > 360){
-            total_rotation.y -= 360;
-        }
-        if(total_rotation.y < -360)
-            total_rotation.y += 360;
-        if(total_rotation.z > 360){
-            total_rotation.z -= 360;
-        }
-        if(total_rotation.z < -360)
-            total_rotation.z += 360;
-        //printf("%d\n", xR);
-        //printf("%d\n", yR);
-        //printf("%d\n", zR);
-                
-        //rotate initially, then rotate based on the incrementing rotation
 
         modelTransform(modVert, n, 0.75, total_rotation,  model_translation);
 
@@ -135,7 +113,6 @@ int main(){
 
 
 
-        printf("%f %f %f\n", terminal[0].z, terminal[1].z, terminal[2].z);
         
         int offset = 0;
         int stride = 3;
@@ -154,7 +131,8 @@ int main(){
 
                 tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
                 tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
-                tri2.v3 = toTerminal(tri2.v3, WIDTH, HEIGHT);
+                tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
+                printf("%f, %f, %f\n", tri2.v1.x, tri2.v1.y, tri2.v1.z);
 
                 float light_value;
 
@@ -164,14 +142,26 @@ int main(){
                 light.y *= light_len;
                 light.z *= light_len;
 
-                light_value = dot(norm, light) * -1;
+                light_value = dot(norm, light) + 1;
 
-                fillTriangle(tri2, frag, WIDTH, HEIGHT, light_value);
-                drawTriangle(tri2, frag, WIDTH, HEIGHT, light_value);
+                List * list = createList();
+                
+                drawTriangle(tri2, &list, WIDTH, HEIGHT, light_value);
+                
+                
+                fillTriangle(&list, WIDTH, HEIGHT);
+                placeFrag(frag, list, WIDTH, HEIGHT);
+        
+                
+                
             }
         }
-        
         render(frag, WIDTH, HEIGHT, screen);
+        resetFrag(frag, WIDTH, HEIGHT);
+
+        
+        
+        
         wait(FPS);
         //break;
         system("cls");
@@ -179,6 +169,7 @@ int main(){
         //points = NULL;
         //free(screen);
     }
+    free(frag);
     
 
     return 0;
