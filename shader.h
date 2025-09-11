@@ -10,16 +10,16 @@
 #include "frag.h"
 
 
-void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l);
-void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l);
-void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, float l);
-void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, float l);
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT);
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT);
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT);
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT);
 void fillTriangle(List **list, int WIDTH, int HEIGHT);
 void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT);
 
 
 //draw line in terms of x (bresenham algo)
-void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l){
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     int dz = vert2.z - vert1.z;
@@ -65,7 +65,7 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, 
     }
 }
 
-void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, float l){
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     int dz = vert2.z - vert1.z;
@@ -122,7 +122,7 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT,
 
 }
 
-void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, float l){
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
     int x0 = vert1.x;
     int y0 = vert1.y;
     int x1 = vert2.x;
@@ -131,15 +131,15 @@ void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, float 
     int m = abs(y0 - y1);
     if(m < n){
         if(x0 > x1)
-            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT, l);
+            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT);
         else
-            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT, l);
+            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT);
     }
     else{
         if(y0 > y1)
-            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT, l);
+            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT);
         else
-            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT, l);
+            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT);
     }
 }
 
@@ -150,11 +150,11 @@ void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, float 
 
 
 
-void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, float l){
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT){
     
-    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT, l);
-    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT, l);
-    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT, l);
+    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT);
+    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT);
+    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT);
 
 }
 
