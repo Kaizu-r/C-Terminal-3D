@@ -12,6 +12,8 @@
 
 int main(){
     
+
+    
     vec3 vertices[] = {
     //front
     0.0, 0.0, 0.0,
@@ -59,10 +61,6 @@ int main(){
     //setup translation here
     vec3 model_translation = {0, 0, 3.0};
 
-    //light
-    vec3 light = {0, 10, -10};
-    //light = toTerminal(&light, WIDTH, HEIGHT);
-
     //setup camera here
     vec3 cam = {0, 0, 0};
     float far = 1000;
@@ -75,9 +73,6 @@ int main(){
     //setup fov here
     float fov= 90;
 
-
-    vec3 view_rotation = {0, 0, 0};
-    vec3 view_translation = {0, 0, 0};
     vec3 total_rotation = model_init_rotation;
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 terminal[n];
@@ -113,52 +108,10 @@ int main(){
 
 
 
-        
-        int offset = 0;
         int stride = 3;
-        int shapes = (sizeof(indices)/sizeof(int))/stride;
-        for(int i = 0; i < shapes; i++){
-            tri tri1 = triangleBuild(terminal, indices, i);
+        int shapes = (sizeof(indices) / sizeof(int))/stride;
 
-            vec3 norm = normal(tri1.v1, tri1.v2, tri1.v3);
-
-            vec3 distance_to_cam = {tri1.v1.x - cam.x, tri1.v1.y - cam.y, tri1.v1.z - cam.z};
-            if(dot(norm, distance_to_cam) < 0){
-                tri tri2 = tri1;
-                proj(&tri2.v1, far, near, fov, WIDTH, HEIGHT);
-                proj(&tri2.v2, far, near, fov, WIDTH, HEIGHT);
-                proj(&tri2.v3, far, near, fov, WIDTH, HEIGHT);
-
-                tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
-                tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
-                tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
-                printf("%f, %f, %f\n", tri2.v1.x, tri2.v1.y, tri2.v1.z);
-
-                float light_value;
-
-                //normalize light
-                float light_len = fast_inRoot(light.x*light.x + light.y*light.y + light.z*light.z);
-                light.x *= light_len;
-                light.y *= light_len;
-                light.z *= light_len;
-
-                light_value = dot(norm, light) + 1;
-
-                List * list = createList();
-                
-                drawTriangle(tri2, &list, WIDTH, HEIGHT, light_value);
-                
-                
-                fillTriangle(&list, WIDTH, HEIGHT);
-                placeFrag(frag, list, WIDTH, HEIGHT);
-        
-                
-                
-            }
-        }
-        render(frag, WIDTH, HEIGHT, screen);
-        resetFrag(frag, WIDTH, HEIGHT);
-
+        draw(terminal, indices, shapes, stride, near, far, fov, cam, frag, screen, WIDTH, HEIGHT);
         
         
         
