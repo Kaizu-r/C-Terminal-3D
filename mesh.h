@@ -7,6 +7,7 @@ typedef struct {
     vec3 * vertices;
     int * indices;
     vec3 rotation;
+    vec3 position;
 } Mesh;
 
 
