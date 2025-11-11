@@ -44,11 +44,10 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int y = vert1.y;
     int z = vert1.z;
     for(int i = 0; i <= n; i++){
-        if(y >= 0 && i + (int) vert1.x >= 0
-        && y < HEIGHT && i + (int)vert1.x < WIDTH){
+    
             vec3 v = {i + (int) vert1.x, (int) y, z};
             pushBack(list, v);
-        }
+        
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
@@ -100,11 +99,9 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
 
     //loop in reverse so it is sorted in ascending order
     for(int i = 0; i <= n; i++){
-        if(x >= 0 && i + (int) vert1.y >= 0
-        && x < WIDTH && i + (int) vert1.y < HEIGHT){
             vec3 v = {x, i + (int) vert1.y, (float) z};
             pushBack(list, v);
-        }
+        
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
@@ -198,7 +195,13 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
         vec2 coord = {p->v.x, p->v.y};
         Frag newFrag;
         newFrag.coord = p->v;
-        vec3 color = {0, 0, p->v.z};
+        
+        vec3 color;
+        vec3 light = {1, 0, 0};
+        vec3 normal = {p->v.x >= 0 ? 1:-1, p->v.y >= 0 ? 1:-1, p->v.z >= 0 ? 1:-1};
+        color.z = dot(normalize(normal), normalize(light));
+
+
         newFrag.color = color;
 
         int index = fragIndex(coord.x, coord.y, WIDTH, HEIGHT);

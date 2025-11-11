@@ -26,29 +26,13 @@ float lightValue(vec3 col){
 
 char toAscii(float z){
 
-    //textures sheesh
-    if(z > 1)
-        return '@';
-    else if(z > 0.9)
-        return '&';
-    else if(z > 0.8)
-        return 'B';
-    else if(z > 0.7)
-        return 'Z';
-    else if(z > 0.6)
-        return 'Q';
-    else if(z > 0.5)
-        return 'X';
-    else if(z > 0.4)
-        return '|';
-    else if(z > 0.3)
-        return '<';
-    else if(z > 0.2)
-       return ':';
-    else if(z > 0.1)
-        return '\'';
-    else
-        return ' ';
+    char* ascii = "$@B%%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`\'.";
+    float col = z;
+    int index = col * (strlen(ascii) - 1);
+    if(index > strlen(ascii) - 1){
+        index = strlen(ascii) - 1;
+    }
+    return ascii[index];
 
 }
 
@@ -64,11 +48,12 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, fl
                 proj(&tri2.v1, far, near, fov, WIDTH, HEIGHT);
                 proj(&tri2.v2, far, near, fov, WIDTH, HEIGHT);
                 proj(&tri2.v3, far, near, fov, WIDTH, HEIGHT);
-
+                
                 tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
                 tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
                 tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
 
+               
                 List * list = createList();
                 
                 drawTriangle(tri2, &list, WIDTH, HEIGHT);
@@ -94,7 +79,7 @@ void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]){
         for(int j = 0; j < WIDTH; j++){
             if(frag[fragIndex( j, i, WIDTH, HEIGHT)].flag){
                 vec3 col = frag[fragIndex(j, i, WIDTH, HEIGHT)].color;
-                screen[k++] = toAscii(col.z * 0.5);
+                screen[k++] = toAscii((1 - (col.z / 4.0)));
             }
             else
                 screen[k++] = ' ';

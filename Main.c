@@ -5,6 +5,7 @@
 #include "renderer.h"
 #include "shader.h"
 #include "utils.h"
+#include "mesh.h"
 
 #define WIDTH 100
 #define HEIGHT 50
@@ -12,6 +13,8 @@
 
 int main(){
     
+
+
     vec3 vertices[] = {
     //front
     0.0, 0.0, 0.0,
@@ -44,24 +47,26 @@ int main(){
         1, 6, 2 
     };
 
+    Mesh box;
+    box.vertices = vertices;
+    box.indices = indices;
+    
+
 
 
     int indCount1 = sizeof(indices)/sizeof(int);
 
 
-    //setup rotation here
+    //setup rotation h
     vec3 model_rotation = {0, 5, 0};
 
     //set up initial rotation
-    vec3 model_init_rotation = {45, 45, 45};
-
+    vec3 model_init_rotation = {5, 5, 5};
+    box.rotation = model_init_rotation;
 
     //setup translation here
     vec3 model_translation = {0, 0, 3.0};
-
-    //light
-    vec3 light = {0, 10, -10};
-    //light = toTerminal(&light, WIDTH, HEIGHT);
+    box.position = model_translation;
 
     //setup camera here
     vec3 cam = {0, 0, 0};
@@ -75,10 +80,7 @@ int main(){
     //setup fov here
     float fov= 90;
 
-
-    vec3 view_rotation = {0, 0, 0};
-    vec3 view_translation = {0, 0, 0};
-    vec3 total_rotation = model_init_rotation;
+    vec3 total_rotation = box.rotation;
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 terminal[n];
     vec3 modVert[n];
@@ -95,16 +97,16 @@ int main(){
         
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
-            modVert[i] = vertices[i];
+            modVert[i] = box.vertices[i];
         }
 
         //edit if needed
-        total_rotation.x += model_rotation.x;
-        total_rotation.y += model_rotation.y;
-        total_rotation.z += model_rotation.z;
+        total_rotation.x += box.rotation.x;
+        total_rotation.y += box.rotation.y;
+        total_rotation.z += box.rotation.z;
 
 
-        modelTransform(modVert, n, 0.75, total_rotation,  model_translation);
+        modelTransform(modVert, n, 0.75, total_rotation,  box.position);
 
 
         for(int i = 0; i < n; i++){
@@ -113,52 +115,10 @@ int main(){
 
 
 
-        
-        int offset = 0;
         int stride = 3;
-        int shapes = (sizeof(indices)/sizeof(int))/stride;
-        for(int i = 0; i < shapes; i++){
-            tri tri1 = triangleBuild(terminal, indices, i);
+        int shapes = indCount1/stride;
 
-            vec3 norm = normal(tri1.v1, tri1.v2, tri1.v3);
-
-            vec3 distance_to_cam = {tri1.v1.x - cam.x, tri1.v1.y - cam.y, tri1.v1.z - cam.z};
-            if(dot(norm, distance_to_cam) < 0){
-                tri tri2 = tri1;
-                proj(&tri2.v1, far, near, fov, WIDTH, HEIGHT);
-                proj(&tri2.v2, far, near, fov, WIDTH, HEIGHT);
-                proj(&tri2.v3, far, near, fov, WIDTH, HEIGHT);
-
-                tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
-                tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
-                tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
-                printf("%f, %f, %f\n", tri2.v1.x, tri2.v1.y, tri2.v1.z);
-
-                float light_value;
-
-                //normalize light
-                float light_len = fast_inRoot(light.x*light.x + light.y*light.y + light.z*light.z);
-                light.x *= light_len;
-                light.y *= light_len;
-                light.z *= light_len;
-
-                light_value = dot(norm, light) + 1;
-
-                List * list = createList();
-                
-                drawTriangle(tri2, &list, WIDTH, HEIGHT, light_value);
-                
-                
-                fillTriangle(&list, WIDTH, HEIGHT);
-                placeFrag(frag, list, WIDTH, HEIGHT);
-        
-                
-                
-            }
-        }
-        render(frag, WIDTH, HEIGHT, screen);
-        resetFrag(frag, WIDTH, HEIGHT);
-
+        draw(terminal, box.indices, shapes, stride, near, far, fov, cam, frag, screen, WIDTH, HEIGHT);
         
         
         
