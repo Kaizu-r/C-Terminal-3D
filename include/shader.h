@@ -26,11 +26,6 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int yi = 1;
     int zi = 1;
 
-    //float z = zGradient(vert1, vert2, 1);
-
-    
-    //array for our valid points in the line
-
     if(dy < 0){
         yi = -1;
         dy = -dy;
@@ -44,21 +39,20 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int y = vert1.y;
     int z = vert1.z;
     for(int i = 0; i <= n; i++){
-    
-            vec3 v = {i + (int) vert1.x, (int) y, z};
-            pushBack(list, v);
-        
+        vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
+        if (!v_ptr) continue;
+        *v_ptr = (vec3){ i + (int) vert1.x, (int) y, z };
+        pushBack(list, (void*) v_ptr);
+
         if(D > 0){
             y += yi;
             D += (dy - dx) << 1;
-        }
-        else
+        } else
             D += dy << 1;
         if(Dz > 0){
             z += zi;
             Dz += (dz - dx) << 1;
-        }
-        else{
+        } else{
             Dz += dz << 1;
         }
     }
@@ -70,18 +64,6 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
     int dz = vert2.z - vert1.z;
     int xi = 1;
     int zi = 1;
-
-    
-    /*
-    float z;
-    //to check for vertical lines
-    if(dx == 0)
-        z = zGradient(vert1, vert2, 0);
-    else
-        z = zGradient(vert1, vert2, 1);
-    */
-
-
 
     if(dx < 0){
         xi = -1;
@@ -97,26 +79,23 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
     int x = vert1.x;
     int z = vert1.z;
 
-    //loop in reverse so it is sorted in ascending order
     for(int i = 0; i <= n; i++){
-            vec3 v = {x, i + (int) vert1.y, (float) z};
-            pushBack(list, v);
-        
+        vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
+        if (!v_ptr) continue;
+        *v_ptr = (vec3){ x, i + (int) vert1.y, (float) z };
+        pushBack(list, (void*) v_ptr);
+
         if(D > 0){
             x += xi;
             D += (dx - dy) << 1;
-        }
-        else
+        } else
             D += dx << 1;
         if(Dz > 0){
             z += zi;
             Dz += (dz - dy) << 1;
-        }
-        else
+        } else
             Dz += dz << 1;
     }
-
-
 }
 
 void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
@@ -141,11 +120,6 @@ void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
 }
 
 
-//no longer usable
-
-
-
-
 
 void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT){
     
@@ -158,47 +132,45 @@ void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT){
 void fillTriangle(List **list, int WIDTH, int HEIGHT){
     int len = (*list)->size;
     vec3 temp[len];
-    //copy contents
+    /* copy contents */
     List_node* p = (*list)->front;
     int i = 0;
     while(p != NULL){
-        temp[i++] = p->v;
+        temp[i++] = *((vec3* )(p->v));
         p = p->next;
     }
-    
 
-    //sort temp array
     mergesort3v(temp, 0, len - 1);
 
-    
     for(int i = 0; i < len - 1; i++){
-        
         if(temp[i].y == temp[i+1].y){
             int dx = temp[i+1].x - temp[i].x;
             float dz = temp[i+1].z - temp[i].z;
             float zstep = (dx == 0) ? 0: (dz/dx);
 
             for(int j = 1, k = zstep; j < dx; j++, k += zstep ){
-                vec3 v = {temp[i].x + j, temp[i].y, temp[i].z + k};
-                
-                pushBack(list, v);
+                vec3 tmp = {temp[i].x + j, temp[i].y, temp[i].z + k};
+                vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
+                if (!v_ptr) continue;
+                *v_ptr = tmp;
+                pushBack(list, (void*) v_ptr);
             }
         }
     }
-    
-
 }
 
 void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
     List_node * p = list->front;
     while(p != NULL){
-        vec2 coord = {p->v.x, p->v.y};
+        vec3 v = *((vec3* )(p->v));
+
+        vec2 coord = {v.x, v.y};
         Frag newFrag;
-        newFrag.coord = p->v;
+        newFrag.coord = v;
         
         vec3 color;
         vec3 light = {1, 0, 0};
-        vec3 normal = {p->v.x >= 0 ? 1:-1, p->v.y >= 0 ? 1:-1, p->v.z >= 0 ? 1:-1};
+        vec3 normal = {v.x >= 0 ? 1:-1, v.y >= 0 ? 1:-1, v.z >= 0 ? 1:-1};
         color.z = dot(normalize(normal), normalize(light));
 
 
@@ -210,7 +182,7 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
            continue; 
         }
         if(frag[index].flag){
-            frag[index] = (p->v.z < frag[index].color.z) ? newFrag : frag[index];
+            frag[index] = (v.z < frag[index].color.z) ? newFrag : frag[index];
         }
         else{
             frag[index] = newFrag;
