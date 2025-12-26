@@ -1,15 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include<process.h>
+#include <time.h>
 
-#include "frag.h"
-#include "renderer.h"
-#include "shader.h"
-#include "utils.h"
-#include "mesh.h"
+
+#include "include/camera.h"
+#include "include/frag.h"
+#include "include/renderer.h"
+#include "include/shader.h"
+#include "include/utils.h"
+#include "include/mesh.h"
 
 #define WIDTH 100
 #define HEIGHT 50
-#define FPS 24
+#define FPS 12
 
 int main(){
     
@@ -17,16 +21,16 @@ int main(){
 
     vec3 vertices[] = {
     //front
-    0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 0.0, 0.0,
+    -1.0, -1.0, -1.0,
+    -1.0, 1.0, -1.0,
+    1.0, 1.0, -1.0,
+    1.0, -1.0, -1.0,
 
     //back
-    0.0, 0.0, 1.0,
-    0.0, 1.0, 1.0,
+    -1.0, -1.0, 1.0,
+    -1.0, 1.0, 1.0,
     1.0, 1.0, 1.0,
-    1.0, 0.0, 1.0,
+    1.0, -1.0, 1.0,
 
         
 
@@ -58,29 +62,25 @@ int main(){
 
 
     //setup rotation h
-    vec3 model_rotation = {0, 5, 0};
+    vec3 model_rotation = {0, 45, 0};
 
     //set up initial rotation
-    vec3 model_init_rotation = {5, 5, 5};
+    vec3 model_init_rotation = {0, 10, 0};
     box.rotation = model_init_rotation;
 
     //setup translation here
-    vec3 model_translation = {0, 0, 3.0};
+    vec3 model_translation = {0, 0, -3};
     box.position = model_translation;
 
     //setup camera here
-    vec3 cam = {0, 0, 0};
-    float far = 1000;
-    float near = 0.1;
-
-    
-    //focal lenght. greater values will zoom it in
-    float focal = 1;
+    Camera cam = {{0, 0, 0}, {0, 0, 0}, 1.0};
+    float far = 10;
+    float near = 1.0;
 
     //setup fov here
-    float fov= 90;
+    float fov= 70;
 
-    vec3 total_rotation = box.rotation;
+    vec3 total_rotation = model_rotation;
     int n = sizeof(vertices)/sizeof(vec3);
     vec3 terminal[n];
     vec3 modVert[n];
@@ -90,10 +90,12 @@ int main(){
 
     //initialize the screen
     char screen[HEIGHT * WIDTH + HEIGHT];
-    int point_len = HEIGHT * WIDTH * 1.5;
+
     Frag* frag = makeFrag(WIDTH, HEIGHT);
     //vec3 *points;
     while(1){
+        
+        clock_t start = clock();
         
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
@@ -122,9 +124,17 @@ int main(){
         
         
         
-        wait(FPS);
+        //wait(FPS);
         //break;
         system("cls");
+        clock_t end = clock();
+        float elapsed = end - start;
+        //elapsed /= CLOCKS_PER_SEC;
+        int fps = CLOCKS_PER_SEC / elapsed;
+        elapsed /= CLOCKS_PER_SEC;
+        elapsed *= 1000;
+        printf("FPS: %d\n", fps);
+        printf("Frametime: %f ms\n", elapsed); 
         //free(points);
         //points = NULL;
         //free(screen);
