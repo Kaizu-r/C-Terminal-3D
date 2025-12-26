@@ -54,11 +54,12 @@ vec3 toTerminal(vec3 pixel, int width, int height){
     terminal.x *= (0.5 * width);
     terminal.y =  (pixel.y + 1);
     terminal.y *= (0.5 * height);
-    terminal.z = (int) pixel.z;
+
+    terminal.z = pixel.z;
 
     terminal.x = floor(terminal.x);
     terminal.y = floor(terminal.y);
-    terminal.z = floor(terminal.z);
+    
 
     return terminal;
 }

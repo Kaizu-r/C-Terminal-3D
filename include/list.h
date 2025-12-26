@@ -1,124 +1,128 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <stdlib.h>
 #include "utils.h"
 #include "vertex.h"
 
-
 typedef struct list_node{
-    vec3 v;
+    void* v;
     struct list_node * next;
     struct list_node* prev;
-
-}List_node;
+} List_node;
 
 typedef struct List{
     List_node* front;
     List_node* back;
     int size;
-}List;
+} List;
 
-List_node* createListNode(vec3 v);
+List_node* createListNode(void* v);
 List* createList();
 void deleteListNode(List_node** m);
 void deleteList(List** m);
-void pushFront(List **m, vec3 v);
-void pushBack(List **m, vec3 v);
+void pushFront(List **m, void* v);
+void pushBack(List **m, void* v);
 void popFront(List **m);
 void popBack(List **m);
 
-List_node* createListNode(vec3 v){
+List_node* createListNode(void* v){
     List_node* m = (List_node*) malloc (sizeof(List_node));
+    if (!m) return NULL;
     m->v = v;
     m->next = NULL;
     m->prev = NULL;
-
     return m;
 }
 
 List* createList(){
     List* m = (List*) malloc(sizeof(List));
+    if (!m) return NULL;
     m->back = NULL;
     m->front = NULL;
     m->size = 0;
-
     return m;
 }
 
+/* Frees node->v (if non-NULL) and the node itself. Sets *m to NULL. */
 void deleteListNode(List_node** m){
+    if (m == NULL || *m == NULL) return;
+    if ((*m)->v) free((*m)->v);
     free(*m);
+    *m = NULL;
 }
+
+/* Frees all nodes and then the List struct. Sets *m to NULL. */
 void deleteList(List** m){
-    if((*m)->front == NULL)
-        return;
-    
-    while((*m)->front != NULL){
-        List_node* p = (*m)->front;
-        (*m)->front = (*m)->front->next;
-        free(p);
+    if (m == NULL || *m == NULL) return;
+    List_node* cur = (*m)->front;
+    while(cur != NULL){
+        List_node* next = cur->next;
+        deleteListNode(&cur);
+        cur = next;
     }
-
-    free((*m)->back);
     free(*m);
-
+    *m = NULL;
 }
 
-void pushFront(List **m, vec3 v){
+void pushFront(List **m, void* v){
+    if (m == NULL || *m == NULL) return;
     List_node* n = createListNode(v);
+    if (!n) return;
     (*m)->size++;
-
     if((*m)->front == NULL){
         (*m)->front = n;
         (*m)->back = n;
         return;
     }
-
     n->next = (*m)->front;
-    n->next->prev = n;
+    (*m)->front->prev = n;
     (*m)->front = n;
-
-
 }
 
-void pushBack(List **m, vec3 v){
+void pushBack(List **m, void* v){
+    if (m == NULL || *m == NULL) return;
     List_node* n = createListNode(v);
+    if (!n) return;
     (*m)->size++;
-
     if((*m)->back == NULL){
         (*m)->front = n;
         (*m)->back = n;
         return;
     }
-
     n->prev = (*m)->back;
-    n->prev->next = n;
+    (*m)->back->next = n;
     (*m)->back = n;
 }
 
-
 void popFront(List **m){
-    if((*m)->front == NULL)
-        return;
-    
+    if (m == NULL || *m == NULL) return;
+    if((*m)->front == NULL) return;
     List_node* p = (*m)->front;
-    (*m)->front = (*m)->front->next;
-    (*m)->front->prev = NULL;
+    if ((*m)->front == (*m)->back) { /* single element */
+        (*m)->front = NULL;
+        (*m)->back = NULL;
+    } else {
+        (*m)->front = (*m)->front->next;
+        if ((*m)->front) (*m)->front->prev = NULL;
+    }
     (*m)->size--;
-
-    free(p);
+    deleteListNode(&p);
 }
 
 void popBack(List **m){
-    if((*m)->back == NULL)
-        return;
-
+    if (m == NULL || *m == NULL) return;
+    if((*m)->back == NULL) return;
     List_node *p = (*m)->back;
-    (*m)->back = (*m)->back->prev;
-    (*m)->back->next = NULL;
+    if ((*m)->front == (*m)->back) { /* single element */
+        (*m)->front = NULL;
+        (*m)->back = NULL;
+    } else {
+        (*m)->back = (*m)->back->prev;
+        if ((*m)->back) (*m)->back->next = NULL;
+    }
     (*m)->size--;
-
-    free(p);
+    deleteListNode(&p);
 }
-
 
 #endif

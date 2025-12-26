@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "vertex.h"
-#include "math.h"
+#include <math.h>
 #include <time.h>
 
 float rad(int deg);
@@ -147,28 +147,28 @@ void model(vec3 vert[], int size, vec3 deg){
 //creates the projected coordinates  
 void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
 
-    float s = 1.0/tan(fov * 0.5 / 180.0 * 3.14);
-    float a =WIDTH/HEIGHT;
+    float s = 1.0f / tanf(fov * 0.5f * M_PI / 180.0f);
+    float aspect = (float)WIDTH / (float)HEIGHT;
         
-        //x and y should be scaled based on z. closer to 1 should make them smaller, closer to -1 should make them larger
-        // 
+    // Standard perspective projection matrix (camera faces -Z)
+    // Maps z = -near -> z_ndc = -1, z = -far -> z_ndc = 1
+    float A = -(far + near) / (far - near);
+    float B = -(2.0f * far * near) / (far - near);
+    
+    float z_view = vert->z;  // Save original view-space Z
+    float z_clip = A * z_view + B;
+    float x_clip = vert->x * (s / aspect);
+    float y_clip = vert->y * s;
+    float w_clip = -z_view;
 
-    float sz = vert->z * far/(far - near) - (near * far)/(far - near);
-    float sx = (vert->x * (s) * a);
-    float sy = (vert->y * (s));
-    float w = vert->z;
-
-    if(w!= 0.0){
-        sx /=w; sy /=w; sz/= w; 
+    if(w_clip != 0.0f){
+        vert->x = x_clip / w_clip;
+        vert->y = y_clip / w_clip;
+        vert->z = z_clip / w_clip;
     }
 
-    vert->x = sx;
-    vert->y = sy;
-   // vert->z = sz;
-       
-       
-     
 
+       
 }
 
 float precision(float num, float factor){
@@ -178,9 +178,9 @@ float precision(float num, float factor){
 //translates the vertex coords. Essentially, we move the world
 void translation(vec3 vert[], int size, vec3 trans){
     for(int i = 0; i < size; i++){
-        vert[i].x -= trans.x;
-        vert[i].y -= trans.y;
-        vert[i].z -= trans.z;
+        vert[i].x += trans.x;
+        vert[i].y += trans.y;
+        vert[i].z += trans.z;
     }
 }
 
@@ -194,12 +194,29 @@ void scale(vec3 vert[], int size, float factor){
 
 //setup the view matrix
 void view(vec3 vert[], int size, vec3 trans, vec3 rot){
+    // apply inverse camera rotation then translate into camera space
+    // p_view = R^T * (p_world - t_cam)
+    float radX = rot.x * (M_PI/180.0f);
+    float radY = rot.y * (M_PI/180.0f);
+    float radZ = rot.z * (M_PI/180.0f);
+
+    // inverse rotation: negate angles
+    mat3 transform = matTransform(rotateX(-radX), rotateY(-radY), rotateZ(-radZ));
 
     for(int i = 0; i < size; i++){
-        //transforms it to view space by subtracting from camera location
-        vert[i].x -= trans.x;
-        vert[i].y -= trans.y;
-        vert[i].z -= trans.z;
+        vec3 temp;
+        // subtract camera translation
+        temp.x = vert[i].x - trans.x;
+        temp.y = vert[i].y - trans.y;
+        temp.z = vert[i].z - trans.z;
+
+        // apply inverse rotation
+        vec3 out;
+        out.x = temp.x * transform.matrix[0][0] + temp.y * transform.matrix[0][1] + temp.z * transform.matrix[0][2];
+        out.y = temp.x * transform.matrix[1][0] + temp.y * transform.matrix[1][1] + temp.z * transform.matrix[1][2];
+        out.z = temp.x * transform.matrix[2][0] + temp.y * transform.matrix[2][1] + temp.z * transform.matrix[2][2];
+
+        vert[i] = out;
     }
 }
 
