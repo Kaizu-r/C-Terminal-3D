@@ -22,22 +22,17 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT);
 void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
-    int dz = vert2.z - vert1.z;
+    float dz = vert2.z - vert1.z;
     int yi = 1;
-    int zi = 1;
 
     if(dy < 0){
         yi = -1;
         dy = -dy;
     }
-    if(dz < 0){
-        zi = -1;
-        dz = -dz;
-    }
     int D = (dy << 1) - dx;
-    int Dz = (dz << 1) - dx;
     int y = vert1.y;
-    int z = vert1.z;
+    float z = vert1.z;
+    float zstep = (dx == 0) ? 0.0f : dz / (float) dx;
     for(int i = 0; i <= n; i++){
         vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
         if (!v_ptr) continue;
@@ -49,35 +44,25 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
             D += (dy - dx) << 1;
         } else
             D += dy << 1;
-        if(Dz > 0){
-            z += zi;
-            Dz += (dz - dx) << 1;
-        } else{
-            Dz += dz << 1;
-        }
+        z += zstep;
     }
 }
 
 void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
-    int dz = vert2.z - vert1.z;
+    float dz = vert2.z - vert1.z;
     int xi = 1;
-    int zi = 1;
 
     if(dx < 0){
         xi = -1;
         dx = -dx;
     }
-    if(dz < 0){
-        zi = -1;
-        dz = -dz;
-    }
 
     int D = (dx << 1) - dy;
-    int Dz = (dz << 1) - dy;
     int x = vert1.x;
-    int z = vert1.z;
+    float z = vert1.z;
+    float zstep = (dy == 0) ? 0.0f : dz / (float) dy;
 
     for(int i = 0; i <= n; i++){
         vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
@@ -90,11 +75,7 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
             D += (dx - dy) << 1;
         } else
             D += dx << 1;
-        if(Dz > 0){
-            z += zi;
-            Dz += (dz - dy) << 1;
-        } else
-            Dz += dz << 1;
+        z += zstep;
     }
 }
 
@@ -169,9 +150,10 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
         newFrag.coord = v;
         
         vec3 color;
-        vec3 light = {1, 0, 0};
+        vec3 light = {1, 1, 0};
         vec3 normal = {v.x >= 0 ? 1:-1, v.y >= 0 ? 1:-1, v.z >= 0 ? 1:-1};
-        color.z = dot(normalize(normal), normalize(light));
+        color.z = v.z;
+
 
 
         newFrag.color = color;
