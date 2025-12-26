@@ -1,8 +1,40 @@
-FUNCTIONALITIES
+What’s Missing
 
-1. Rasterizer
-2. Depth Testing
-3. Transformations(Rotation)
+Vertex attributes: you have only positions vec3; need per-vertex vec2 UVs (and ideally normals later).
+Clip-space data: projection currently discards w_clip. For perspective-correct texturing you must carry 1/w.
+Raster interpolation: current line/triangle fill only interpolates z roughly; you need proper per-pixel interpolation of (u/w, v/w, 1/w) across the triangle in screen space.
+Fragment data: Frag only holds color.z as a depth bucket. It needs UV (or sampled color), and a separate float depth buffer for z-testing.
+Texture sampling: no texture loader/buffer yet. You’ll need a simple image loader and a sampler that maps UV to a texel and converts to intensity for ASCII.
+Minimal Changes To Be Texture-Ready
 
-OPTIMIZATIONS
-1. number of points is greater than actual points due to duplicate lines
+Data structures:
+Add vec2* uvs to Mesh (and populate alongside vertices/indices).
+Add a projected vertex/attr struct, e.g. struct PV { vec3 ndc; float inv_w; vec2 uv_over_w; };
+Extend Frag to hold float depth; vec2 uv; (and keep flag).
+Projection:
+After you compute NDC and w_clip in proj(), also compute:
+inv_w = 1.0f / w_clip
+uv_over_w = uv * inv_w
+Keep these with each vertex through to rasterization.
+Rasterization (triangles):
+Switch to barycentric or edge-function raster. At each pixel:
+Interpolate inv_w, u_over_w, v_over_w linearly in screen space.
+Recover perspective-correct UV: u = u_over_w / inv_w, v = v_over_w / inv_w.
+Interpolate NDC z (or directly use depth in clip space) and do a proper z-test against a float z-buffer.
+Sampling + ASCII:
+Sample texture at (u, v) with wrapping/clamp. Convert to grayscale [0..1] or use luminance. Feed that to your toAscii().
+Concrete Plan (Incremental)
+
+Step 1: Add UVs
+Add vec2* uvs to Mesh.
+Provide UVs for your cube (each face 0..1).
+Step 2: Carry w
+In proj(), return/store w_clip or inv_w alongside NDC.
+Step 3: Raster upgrade
+Replace current span fill with barycentric interpolation over the triangle bounding box.
+Interpolate (u_over_w, v_over_w, inv_w, depth) per pixel.
+Add a float* zbuffer and do if (depth < zbuffer[x,y]) then write fragment.
+Step 4: Texture
+Add a simple texture loader. Easiest is a grayscale PGM or use stb_image.h to load PNG/JPG into a uint8_t* buffer with width/height.
+Implement sampleTexture(tex, u, v) → [0..1].
+Map to ASCII with your toAscii().
