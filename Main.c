@@ -55,7 +55,14 @@ int main(){
     box.vertices = vertices;
     box.indices = indices;
     
+    //try bunny
+    Mesh bunny;
+    if(loadMesh(&bunny, "bunny.obj") != 0){
+        printf("Failed to load bunny.obj\n");
+        return 1;
+    }
 
+    int indCount = bunny.indexCount;
 
 
     int indCount1 = sizeof(indices)/sizeof(int);
@@ -67,25 +74,24 @@ int main(){
     //set up initial rotation
     vec3 model_init_rotation = {0, 10, 0};
     box.rotation = model_init_rotation;
+    setMeshRotation(&bunny, model_init_rotation);
 
     //setup translation here
-    vec3 model_translation = {0, 0, -3};
+    vec3 model_translation = {0, -0.5, -10};
     box.position = model_translation;
+    setMeshPosition(&bunny, model_translation);
 
     //setup camera here
     Camera cam = {{0, 0, 0}, {0, 0, 0}, 1.0};
-    float far = 10;
+    float far = 100;
     float near = 1.0;
 
     //setup fov here
     float fov= 70;
 
     vec3 total_rotation = model_rotation;
-    int n = sizeof(vertices)/sizeof(vec3);
-    vec3 terminal[n];
-    vec3 modVert[n];
-
-    vec3 projection[n];
+    int n = bunny.vertexCount;
+    vec3 * terminal = (vec3*) malloc(sizeof(vec3) * n);
 
 
     //initialize the screen
@@ -99,28 +105,21 @@ int main(){
         
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
-            modVert[i] = box.vertices[i];
+            terminal[i] = bunny.vertices[i];
         }
 
         //edit if needed
-        total_rotation.x += box.rotation.x;
-        total_rotation.y += box.rotation.y;
-        total_rotation.z += box.rotation.z;
+        total_rotation.x += bunny.rotation.x;
+        total_rotation.y += bunny.rotation.y;
+        total_rotation.z += bunny.rotation.z;
 
 
-        modelTransform(modVert, n, 0.75, total_rotation,  box.position);
-
-
-        for(int i = 0; i < n; i++){
-            terminal[i] = modVert[i];
-        }
-
-
+        modelTransform(terminal, n, 30.0, total_rotation,  bunny.position);
 
         int stride = 3;
-        int shapes = indCount1/stride;
+        int shapes = indCount/3;
 
-        draw(terminal, box.indices, shapes, stride, near, far, fov, cam, frag, screen, WIDTH, HEIGHT);
+        draw(terminal, bunny.indices, shapes, stride, near, far, fov, cam, frag, screen, WIDTH, HEIGHT);
         
         
         
