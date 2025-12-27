@@ -90,6 +90,8 @@ void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]){
                 float depth = (col.z + 1.0f) * 0.5f;
                 if(depth < 0.0f) depth = 0.0f;
                 if(depth > 1.0f) depth = 1.0f;
+                // Invert depth so closer objects are lighter
+                depth = 1.0f - depth;
                 screen[k++] = toAscii(depth);
             }
             else
