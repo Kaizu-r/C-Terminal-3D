@@ -83,8 +83,8 @@ int main(){
 
     //setup camera here
     Camera cam = {{0, 0, 0}, {0, 0, 0}, 1.0};
-    float far = 100;
-    float near = 1.0;
+    float far_d = 100;
+    float near_d = 1.0;
 
     //setup fov here
     float fov= 70;
@@ -119,21 +119,17 @@ int main(){
         int stride = 3;
         int shapes = indCount/3;
 
-        draw(terminal, bunny.indices, shapes, stride, near, far, fov, cam, frag, screen, WIDTH, HEIGHT);
+        // Clear screen before rendering
+        printf("\033[2J\033[H\033[3J");
         
+        draw(terminal, bunny.indices, shapes, stride, near_d, far_d, fov, cam, frag, screen, WIDTH, HEIGHT);
         
-        
-        //wait(FPS);
-        //break;
-        system("cls");
         clock_t end = clock();
         float elapsed = end - start;
-        //elapsed /= CLOCKS_PER_SEC;
         int fps = CLOCKS_PER_SEC / elapsed;
         elapsed /= CLOCKS_PER_SEC;
         elapsed *= 1000;
-        printf("FPS: %d\n", fps);
-        printf("Frametime: %f ms\n", elapsed); 
+        printf("FPS: %d | Frametime: %.2f ms\n", fps, elapsed); 
         //free(points);
         //points = NULL;
         //free(screen);
