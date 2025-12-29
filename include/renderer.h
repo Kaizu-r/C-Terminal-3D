@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
 
 #include "camera.h"
 #include "coords.h"
@@ -10,11 +11,11 @@
 #include "vertex.h"
 #include "shader.h"
 #include "list.h"
-
+    
 
 float lightValue(vec3 col);
 char toAscii(float z);
-void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, float far, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
+void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
 void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]);
 
 
@@ -37,7 +38,7 @@ char toAscii(float z){
 
 }
 
-void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, float far, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
+void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
         for(int i = 0; i < shapes; i++){
             tri tri1 = triangleBuild(vertices, indices, i);
 
@@ -52,9 +53,9 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, fl
                 view(&tri2.v3, 1, cam.position, cam.rotation);
 
                 //project the triangle vertices
-                proj(&tri2.v1, far, near, fov, WIDTH, HEIGHT);
-                proj(&tri2.v2, far, near, fov, WIDTH, HEIGHT);
-                proj(&tri2.v3, far, near, fov, WIDTH, HEIGHT);
+                proj(&tri2.v1, farPlane, nearPlane, fov, WIDTH, HEIGHT);
+                proj(&tri2.v2, farPlane, nearPlane, fov, WIDTH, HEIGHT);
+                proj(&tri2.v3, farPlane, nearPlane, fov, WIDTH, HEIGHT);
                 
                 tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
                 tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
@@ -81,27 +82,47 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float near, fl
 
 //more in line with traditional rendering
 void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]){
+    static HANDLE hConsole = NULL;
+    static CHAR_INFO* buffer = NULL;
+    static SMALL_RECT writeRegion;
+    
+    // Initialize console on first call
+    if (!hConsole) {
+        hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        buffer = (CHAR_INFO*)malloc(sizeof(CHAR_INFO) * WIDTH * HEIGHT);
+        writeRegion.Left = 0;
+        writeRegion.Top = 0;
+        writeRegion.Right = WIDTH - 1;
+        writeRegion.Bottom = HEIGHT - 1;
+    }
+    
+    // Build buffer with color info
     int k = 0;
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
-            if(frag[fragIndex( j, i, WIDTH, HEIGHT)].flag){
+            if(frag[fragIndex(j, i, WIDTH, HEIGHT)].flag){
                 vec3 col = frag[fragIndex(j, i, WIDTH, HEIGHT)].color;
-                // Map NDC z from [-1, 1] to [0, 1] for ASCII mapping
                 float depth = (col.z + 1.0f) * 0.5f;
                 if(depth < 0.0f) depth = 0.0f;
                 if(depth > 1.0f) depth = 1.0f;
-                // Invert depth so closer objects are lighter
+
                 depth = 1.0f - depth;
-                screen[k++] = toAscii(depth);
+                buffer[k].Char.AsciiChar = toAscii(depth);
             }
-            else
-                screen[k++] = ' ';
-            
+            else {
+                buffer[k].Char.AsciiChar = ' ';
+
+            }
+            // White text on black background
+            buffer[k].Attributes = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+            k++;
         }
-        screen[k++] = '\n';
     }
-    screen[k++] = '\0';
-    printf(screen);
+    
+    // Write directly to console buffer (much faster than printf)
+    COORD bufferSize = {WIDTH, HEIGHT};
+    COORD bufferCoord = {0, 0};
+    WriteConsoleOutputA(hConsole, buffer, bufferSize, bufferCoord, &writeRegion);
 }
 
 #endif
