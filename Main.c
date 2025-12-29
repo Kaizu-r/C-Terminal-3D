@@ -83,8 +83,10 @@ int main(){
 
     //setup camera here
     Camera cam = {{0, 0, 0}, {0, 0, 0}, 1.0};
+
     float far_d = 100;
     float near_d = 1.0;
+
 
     //setup fov here
     float fov= 70;
@@ -119,8 +121,10 @@ int main(){
         int stride = 3;
         int shapes = indCount/3;
 
+
         // Clear screen before rendering
         printf("\033[2J\033[H\033[3J");
+
         
         draw(terminal, bunny.indices, shapes, stride, near_d, far_d, fov, cam, frag, screen, WIDTH, HEIGHT);
         

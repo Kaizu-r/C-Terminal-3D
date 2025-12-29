@@ -105,11 +105,13 @@ void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]){
                 float depth = (col.z + 1.0f) * 0.5f;
                 if(depth < 0.0f) depth = 0.0f;
                 if(depth > 1.0f) depth = 1.0f;
+
                 depth = 1.0f - depth;
                 buffer[k].Char.AsciiChar = toAscii(depth);
             }
             else {
                 buffer[k].Char.AsciiChar = ' ';
+
             }
             // White text on black background
             buffer[k].Attributes = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
