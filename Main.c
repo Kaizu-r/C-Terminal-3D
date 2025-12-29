@@ -14,6 +14,7 @@
 #define WIDTH 100
 #define HEIGHT 50
 #define FPS 12
+#define TICK 0.1
 
 int main(){
     
@@ -100,10 +101,14 @@ int main(){
     char screen[HEIGHT * WIDTH + HEIGHT];
 
     Frag* frag = makeFrag(WIDTH, HEIGHT);
+
+    float elapsed = 0;
+    float elapsed_tick = 0;
     //vec3 *points;
     while(1){
         
         clock_t start = clock();
+        clock_t tick_start = clock();
         
         //copy vertex data to modvert
         for(int i = 0; i < n; i++){
@@ -111,9 +116,13 @@ int main(){
         }
 
         //edit if needed
-        total_rotation.x += bunny.rotation.x;
-        total_rotation.y += bunny.rotation.y;
-        total_rotation.z += bunny.rotation.z;
+        if(elapsed_tick >= TICK){
+            total_rotation.x += bunny.rotation.x;
+            total_rotation.y += bunny.rotation.y;
+            total_rotation.z += bunny.rotation.z;
+            elapsed_tick = 0;
+        }
+        
 
 
         modelTransform(terminal, n, 30.0, total_rotation,  bunny.position);
@@ -129,7 +138,9 @@ int main(){
         draw(terminal, bunny.indices, shapes, stride, near_d, far_d, fov, cam, frag, screen, WIDTH, HEIGHT);
         
         clock_t end = clock();
-        float elapsed = end - start;
+        elapsed_tick += (end - tick_start) / (float) CLOCKS_PER_SEC;
+
+        elapsed = end - start;
         int fps = CLOCKS_PER_SEC / elapsed;
         elapsed /= CLOCKS_PER_SEC;
         elapsed *= 1000;
