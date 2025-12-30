@@ -10,16 +10,16 @@
 #include "frag.h"
 
 
-void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT);
-void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT);
-void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT);
-void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT);
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm);
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm);
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, vec3 norm);
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, vec3 norm);
 void fillTriangle(List **list, int WIDTH, int HEIGHT);
 void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT);
 
 
 //draw line in terms of x (bresenham algo)
-void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     float dz = vert2.z - vert1.z;
@@ -36,7 +36,7 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     for(int i = 0; i <= n; i++){
         vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
         if (!v_ptr) continue;
-        *v_ptr = (vec3){ i + (int) vert1.x, (int) y, z };
+        *v_ptr = (vec3){ i + (int) vert1.x, (int) y, z, norm.x, norm.y, norm.z };
         pushBack(list, (void*) v_ptr);
 
         if(D > 0){
@@ -48,7 +48,7 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     }
 }
 
-void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     float dz = vert2.z - vert1.z;
@@ -67,7 +67,8 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
     for(int i = 0; i <= n; i++){
         vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
         if (!v_ptr) continue;
-        *v_ptr = (vec3){ x, i + (int) vert1.y, (float) z };
+        *v_ptr = (vec3){ x, i + (int) vert1.y, (float) z, norm.x, norm.y, norm.z };
+        
         pushBack(list, (void*) v_ptr);
 
         if(D > 0){
@@ -79,7 +80,7 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
     }
 }
 
-void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, vec3 norm){
     int x0 = vert1.x;
     int y0 = vert1.y;
     int x1 = vert2.x;
@@ -88,25 +89,25 @@ void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
     int m = abs(y0 - y1);
     if(m < n){
         if(x0 > x1)
-            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT);
+            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT, norm);
         else
-            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT);
+            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT, norm);
     }
     else{
         if(y0 > y1)
-            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT);
+            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT, norm);
         else
-            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT);
+            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT, norm);
     }
 }
 
 
 
-void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT){
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, vec3 norm){
     
-    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT);
-    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT);
-    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT);
+    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT, norm);
+    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT, norm);
+    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT, norm);
 
 }
 
@@ -130,7 +131,7 @@ void fillTriangle(List **list, int WIDTH, int HEIGHT){
             float zstep = (dx == 0) ? 0: (dz/dx);
 
             for(int j = 1, k = zstep; j < dx; j++, k += zstep ){
-                vec3 tmp = {temp[i].x + j, temp[i].y, temp[i].z + k};
+                vec3 tmp = {temp[i].x + j, temp[i].y, temp[i].z + k, temp[i].nx, temp[i].ny, temp[i].nz};
                 vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
                 if (!v_ptr) continue;
                 *v_ptr = tmp;
@@ -151,8 +152,9 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
         
         vec3 color;
         vec3 light = {1, 1, 0};
-        vec3 normal = {v.x >= 0 ? 1:-1, v.y >= 0 ? 1:-1, v.z >= 0 ? 1:-1};
-        color.z = v.z;
+        vec3 normal = {v.nx, v.ny, v.nz};
+        float intensity = dot(normalize(light), normalize(normal));
+        color.z = intensity;
 
 
 
