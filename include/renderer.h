@@ -64,7 +64,7 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlan
                
                 List * list = createList();
                 
-                drawTriangle(tri2, &list, WIDTH, HEIGHT);
+                drawTriangle(tri2, &list, WIDTH, HEIGHT, norm);
                 
                 
                 fillTriangle(&list, WIDTH, HEIGHT);
