@@ -145,15 +145,15 @@ void model(vec3 vert[], int size, vec3 deg){
 }
 
 //creates the projected coordinates  
-void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
+void proj(vec3 *vert, int farPlane, int nearPlane, int fov, int WIDTH, int HEIGHT){
 
     float s = 1.0f / tanf(fov * 0.5f * M_PI / 180.0f);
     float aspect = (float)WIDTH / (float)HEIGHT;
         
     // Standard perspective projection matrix (camera faces -Z)
     // Maps z = -near -> z_ndc = -1, z = -far -> z_ndc = 1
-    float A = -(far + near) / (far - near);
-    float B = -(2.0f * far * near) / (far - near);
+    float A = -(farPlane + nearPlane) / (farPlane - nearPlane);
+    float B = -(2.0f * farPlane * nearPlane) / (farPlane - nearPlane);
     
     float z_view = vert->z;  // Save original view-space Z
     float z_clip = A * z_view + B;
@@ -166,7 +166,6 @@ void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT){
         vert->y = y_clip / w_clip;
         vert->z = z_clip / w_clip;
     }
-
 
        
 }
