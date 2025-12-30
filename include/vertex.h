@@ -7,6 +7,11 @@ typedef struct vector3{
     float x;
     float y;
     float z;
+
+    //norm
+    float nx;
+    float ny;
+    float nz;
 } vec3;
 
 typedef struct vector2{
