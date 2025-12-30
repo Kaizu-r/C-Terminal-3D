@@ -48,10 +48,11 @@ float rad(int deg){
     return y;
 }
 
+//old clear function using ANSI escape codes
 void clear(){
     printf("\e[1;1H\e[1J\e[2J\e[3J");
 }
-
+//simple wait function
 void wait(int waiting){
     int ms = (CLOCKS_PER_SEC/waiting);
     clock_t start_time = clock();
@@ -65,7 +66,7 @@ void wait(int waiting){
     
 }
 
-//rotation matrixes (keep in mind our z is the other way around so multiply the 3rd column by -1)
+//rotation matrixes
 mat3 rotateX(float radians){
     mat3 rotX = {
         1, 0, 0,
@@ -125,8 +126,6 @@ void model(vec3 vert[], int size, vec3 deg){
 
 
     //get our transformation matrix
-    
-
     mat3 transform = matTransform(rotateX(radX), rotateY(radY), rotateZ(radZ));
 
     //transform each vertex
@@ -170,6 +169,7 @@ void proj(vec3 *vert, int farPlane, int nearPlane, int fov, int WIDTH, int HEIGH
        
 }
 
+//sets precision of a float number
 float precision(float num, float factor){
     return ((int) num * factor)/factor;
 }
@@ -183,6 +183,7 @@ void translation(vec3 vert[], int size, vec3 trans){
     }
 }
 
+//scale vertex by factor
 void scale(vec3 vert[], int size, float factor){
     for(int i = 0; i < size; i++){
         vert[i].x *= factor;
@@ -219,14 +220,7 @@ void view(vec3 vert[], int size, vec3 trans, vec3 rot){
     }
 }
 
-//setup the camera
-void camera(vec3 vert[], int size, float focal){
-    for(int i = 0; i < size; i++){
-        vert[i].x *= focal;
-        vert[i].y *= focal;
-    }
-}
-
+//applies model transformations: scaling, rotation, translation
 void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans){
     scale(vert, size, factor);
     model(vert, size, deg);
@@ -422,21 +416,6 @@ vec3 normalize(vec3 v){
     vec3 newv = {v.x * invlen, v.y * invlen, v.z * invlen};
     return newv;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
