@@ -13,6 +13,7 @@ typedef struct {
     vec3 position;
     int vertexCount;
     int indexCount;
+    float scale;
 } Mesh;
 
 void initMesh(Mesh* mesh, vec3* vertices, int* indices, vec3 rotation, vec3 position, int vertexCount, int indexCount) {
