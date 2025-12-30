@@ -62,6 +62,12 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlan
                 view(&tri2.v2, 1, cam.position, cam.rotation);
                 view(&tri2.v3, 1, cam.position, cam.rotation);
 
+                // Near plane clipping: skip triangles too close to camera
+                // In view space, camera looks down -Z, so valid depth is negative
+                if(tri2.v1.z >= -nearPlane || tri2.v2.z >= -nearPlane || tri2.v3.z >= -nearPlane){
+                    continue;  // Skip this triangle, it's too close or behind camera
+                }
+
                 //project the triangle vertices
                 proj(&tri2.v1, farPlane, nearPlane, fov, WIDTH, HEIGHT);
                 proj(&tri2.v2, farPlane, nearPlane, fov, WIDTH, HEIGHT);
@@ -98,6 +104,8 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlan
 
 //more in line with traditional rendering
 void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]){
+
+    //winows console specific rendering
     static HANDLE hConsole = NULL;
     static CHAR_INFO* buffer = NULL;
     static SMALL_RECT writeRegion;

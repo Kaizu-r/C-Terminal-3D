@@ -31,8 +31,8 @@ static void poll_input(Mesh *target, bool *quit_requested, float delta_time) {
     if (GetAsyncKeyState('S') & 0x8000) target->position.z -= move_delta;
     if (GetAsyncKeyState('A') & 0x8000) target->position.x -= move_delta;
     if (GetAsyncKeyState('D') & 0x8000) target->position.x += move_delta;
-    if (GetAsyncKeyState('R') & 0x8000) target->position.y += move_delta;
-    if (GetAsyncKeyState('F') & 0x8000) target->position.y -= move_delta;
+    if (GetAsyncKeyState('R') & 0x8000) target->position.y -= move_delta;
+    if (GetAsyncKeyState('F') & 0x8000) target->position.y += move_delta;
 
     // Rotation
     float rotation_delta = ROTATION_SPEED * delta_time;
@@ -106,10 +106,12 @@ int main(void) {
     clock_t last_frame = clock();
 
     while (!quit_requested) {
+        //fps setup and delta time calculation
         clock_t start = clock();
         float delta_time = (start - last_frame) / (float)CLOCKS_PER_SEC;
         last_frame = start;
 
+        //copy original vertices to terminal buffer
         for (int i = 0; i < n; i++) {
             terminal[i] = bunny.vertices[i];
         }
@@ -119,14 +121,16 @@ int main(void) {
         if (quit_requested) {
             break;
         }
-
+        //apply model transformations
         modelTransform(terminal, n, bunny.scale, bunny.rotation, bunny.position);
 
         int stride = 3;
         int shapes = bunny.indexCount / 3;
 
+        // render the frame
         draw(terminal, bunny.indices, shapes, stride, near_d, far_d, fov, cam, frag, screen, WIDTH, HEIGHT);
 
+        //more fps bs and delta time bs
         clock_t end = clock();
 
         clock_t frame_ticks = end - start;
