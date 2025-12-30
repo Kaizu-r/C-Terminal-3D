@@ -31,8 +31,8 @@ static void poll_input(Mesh *target, bool *quit_requested, float delta_time) {
     if (GetAsyncKeyState('S') & 0x8000) target->position.z -= move_delta;
     if (GetAsyncKeyState('A') & 0x8000) target->position.x -= move_delta;
     if (GetAsyncKeyState('D') & 0x8000) target->position.x += move_delta;
-    if (GetAsyncKeyState('R') & 0x8000) target->position.y += move_delta;
-    if (GetAsyncKeyState('F') & 0x8000) target->position.y -= move_delta;
+    if (GetAsyncKeyState('R') & 0x8000) target->position.y -= move_delta;
+    if (GetAsyncKeyState('F') & 0x8000) target->position.y += move_delta;
 
     // Rotation
     float rotation_delta = ROTATION_SPEED * delta_time;
