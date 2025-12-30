@@ -28,9 +28,14 @@ float lightValue(vec3 col){
 
 char toAscii(float z){
 
+    //ascii gradient
     char* ascii = "$@B%%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`\'.";
     float col = z;
+
+    //maps 0.0 -> 1.0 to 0 -> len(ascii) -1
     int index = col * (strlen(ascii) - 1);
+
+    //clamping
     if(index > strlen(ascii) - 1){
         index = strlen(ascii) - 1;
     }
@@ -38,13 +43,18 @@ char toAscii(float z){
 
 }
 
+//draw call
 void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
         for(int i = 0; i < shapes; i++){
+            //triangle setup
             tri tri1 = triangleBuild(vertices, indices, i);
 
+            //calculate normal
             vec3 norm = normal(tri1.v1, tri1.v2, tri1.v3);
 
+            //backface culling
             vec3 distance_to_cam = {tri1.v1.x - cam.position.x, tri1.v1.y - cam.position.y, tri1.v1.z - cam.position.z};
+            
             if(dot(norm, distance_to_cam) < 0){
                 tri tri2 = tri1;
                 //move to camera space
@@ -56,25 +66,31 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlan
                 proj(&tri2.v1, farPlane, nearPlane, fov, WIDTH, HEIGHT);
                 proj(&tri2.v2, farPlane, nearPlane, fov, WIDTH, HEIGHT);
                 proj(&tri2.v3, farPlane, nearPlane, fov, WIDTH, HEIGHT);
-                
+                //convert to terminal coords
                 tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
                 tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
                 tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
 
-               
+               //create list for rasterization
                 List * list = createList();
                 
-                drawTriangle(tri2, &list, WIDTH, HEIGHT);
+                //draw triangle edges
+                drawTriangle(tri2, &list, WIDTH, HEIGHT, norm);
                 
-                
+                //fill triangle
                 fillTriangle(&list, WIDTH, HEIGHT);
+
+                //place fragments
                 placeFrag(frag, list, WIDTH, HEIGHT);
         
                 
                 
             }
         }
+        //render the frame (duh)
         render(frag, WIDTH, HEIGHT, screen);
+
+        //reset frag for next frame
         resetFrag(frag, WIDTH, HEIGHT);
 
 }

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<process.h>
 #include <time.h>
-
+#include <stdbool.h>
+#include <windows.h>
 
 #include "include/camera.h"
 #include "include/frag.h"
@@ -13,134 +13,141 @@
 
 #define WIDTH 100
 #define HEIGHT 50
-#define FPS 12
+#define FPS 24
+#define TICK 0.1f
+#define ROTATION_SPEED 90.0f  // degrees per second
+#define MOVE_SPEED 5.0f       // units per second
 
-int main(){
+//input handling
+static void poll_input(Mesh *target, bool *quit_requested, float delta_time) {
+    if (GetAsyncKeyState('Q') & 0x8000) {
+        *quit_requested = true;
+        return;
+    }
+
+    // Movement
+    float move_delta = MOVE_SPEED * delta_time;
+    if (GetAsyncKeyState('W') & 0x8000) target->position.z += move_delta;
+    if (GetAsyncKeyState('S') & 0x8000) target->position.z -= move_delta;
+    if (GetAsyncKeyState('A') & 0x8000) target->position.x -= move_delta;
+    if (GetAsyncKeyState('D') & 0x8000) target->position.x += move_delta;
+    if (GetAsyncKeyState('R') & 0x8000) target->position.y += move_delta;
+    if (GetAsyncKeyState('F') & 0x8000) target->position.y -= move_delta;
+
+    // Rotation
+    float rotation_delta = ROTATION_SPEED * delta_time;
+    if (GetAsyncKeyState('I') & 0x8000) target->rotation.x -= rotation_delta;
+    if (GetAsyncKeyState('K') & 0x8000) target->rotation.x += rotation_delta;
+    if (GetAsyncKeyState('J') & 0x8000) target->rotation.y -= rotation_delta;
+    if (GetAsyncKeyState('L') & 0x8000) target->rotation.y += rotation_delta;
+    if (GetAsyncKeyState('U') & 0x8000) target->rotation.z -= rotation_delta;
+    if (GetAsyncKeyState('O') & 0x8000) target->rotation.z += rotation_delta;
     
+    //scale
+    float scale_delta = 5.0f * delta_time;
+    if (GetAsyncKeyState('G') & 0x8000) target->scale += scale_delta;
+    if (GetAsyncKeyState('H') & 0x8000) target->scale -= scale_delta;
+    //reset
+    if (GetAsyncKeyState('E') & 0x8000) {
+        target->position = (vec3){0.0f, 0.0f, -5.0f};
+        target->rotation = (vec3){0.0f, 0.0f, 0.0f};
+    }
+}
 
-
-    vec3 vertices[] = {
-    //front
-    -1.0, -1.0, -1.0,
-    -1.0, 1.0, -1.0,
-    1.0, 1.0, -1.0,
-    1.0, -1.0, -1.0,
-
-    //back
-    -1.0, -1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0,
-    1.0, -1.0, 1.0,
-
-        
-
-    };
-    //left to right in terms of x
-    int indices[] = {
-        0, 1, 2,
-        0, 2, 3,
-        7, 6, 5,
-        7, 5, 4,
-        3, 2, 6,
-        3, 6, 7,
-        4, 5, 1,
-        4, 1, 0,
-        4, 0, 3,
-        4, 3, 7,
-        1, 5, 6,
-        1, 6, 2 
-    };
-
-    Mesh box;
-    box.vertices = vertices;
-    box.indices = indices;
+int main(void) {
     
-    //try bunny
+    //load bunny mesh
     Mesh bunny;
-    if(loadMesh(&bunny, "bunny.obj") != 0){
+    bunny.scale = 1.0f;
+    if (loadMesh(&bunny, "bunny.obj") != 0) {
         printf("Failed to load bunny.obj\n");
         return 1;
     }
 
-    int indCount = bunny.indexCount;
 
 
-    int indCount1 = sizeof(indices)/sizeof(int);
-
-
-    //setup rotation h
-    vec3 model_rotation = {0, 45, 0};
-
-    //set up initial rotation
-    vec3 model_init_rotation = {0, 10, 0};
-    box.rotation = model_init_rotation;
+    // set up initial rotation
+    vec3 model_init_rotation = {0.0f, 10.0f, 0.0f};
     setMeshRotation(&bunny, model_init_rotation);
 
-    //setup translation here
-    vec3 model_translation = {0, -0.5, -10};
-    box.position = model_translation;
+    // setup translation here
+    vec3 model_translation = {0.0f, -0.5f, -10.0f};
     setMeshPosition(&bunny, model_translation);
 
-    //setup camera here
-    Camera cam = {{0, 0, 0}, {0, 0, 0}, 1.0};
+    // setup camera here
+    Camera cam = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 1.0f};
 
-    float far_d = 100;
-    float near_d = 1.0;
+    //far and near planes
+    float far_d = 100.0f;
+    float near_d = 1.0f;
 
+    float fov = 70.0f;
 
-    //setup fov here
-    float fov= 70;
-
-    vec3 total_rotation = model_rotation;
     int n = bunny.vertexCount;
-    vec3 * terminal = (vec3*) malloc(sizeof(vec3) * n);
 
+    //temp holder for transformed vertices
+    vec3 *terminal = (vec3 *)malloc(sizeof(vec3) * n);
+    if (!terminal) {
+        fprintf(stderr, "Failed to allocate terminal buffer\n");
+        freeMesh(&bunny);
+        return 1;
+    }
 
-    //initialize the screen
+    //screen buffer
     char screen[HEIGHT * WIDTH + HEIGHT];
+    Frag *frag = makeFrag(WIDTH, HEIGHT);
 
-    Frag* frag = makeFrag(WIDTH, HEIGHT);
-    //vec3 *points;
-    while(1){
-        
+    printf("Controls: WASD move, R/F rise/fall, I/K/J/L/U/O rotate, Q quit\n");
+    printf("Press any key to start...\n");
+    getchar();
+    system("cls");
+
+    bool quit_requested = false;
+    clock_t last_frame = clock();
+
+    while (!quit_requested) {
         clock_t start = clock();
-        
-        //copy vertex data to modvert
-        for(int i = 0; i < n; i++){
+        float delta_time = (start - last_frame) / (float)CLOCKS_PER_SEC;
+        last_frame = start;
+
+        for (int i = 0; i < n; i++) {
             terminal[i] = bunny.vertices[i];
         }
 
-        //edit if needed
-        total_rotation.x += bunny.rotation.x;
-        total_rotation.y += bunny.rotation.y;
-        total_rotation.z += bunny.rotation.z;
+        // Poll input every frame with delta time
+        poll_input(&bunny, &quit_requested, delta_time);
+        if (quit_requested) {
+            break;
+        }
 
-
-        modelTransform(terminal, n, 30.0, total_rotation,  bunny.position);
+        modelTransform(terminal, n, bunny.scale, bunny.rotation, bunny.position);
 
         int stride = 3;
-        int shapes = indCount/3;
+        int shapes = bunny.indexCount / 3;
 
-
-        // Clear screen before rendering
-        printf("\033[2J\033[H\033[3J");
-
-        
         draw(terminal, bunny.indices, shapes, stride, near_d, far_d, fov, cam, frag, screen, WIDTH, HEIGHT);
-        
+
         clock_t end = clock();
-        float elapsed = end - start;
-        int fps = CLOCKS_PER_SEC / elapsed;
-        elapsed /= CLOCKS_PER_SEC;
-        elapsed *= 1000;
-        printf("FPS: %d | Frametime: %.2f ms\n", fps, elapsed); 
-        //free(points);
-        //points = NULL;
-        //free(screen);
+
+        clock_t frame_ticks = end - start;
+        int fps = (frame_ticks > 0) ? (int)(CLOCKS_PER_SEC / frame_ticks) : 0;
+        float frametime_ms = (frame_ticks / (float)CLOCKS_PER_SEC) * 1000.0f;
+
+        // Show stats in window title instead of printing lines (avoids scroll/flicker)
+        char title[128];
+        snprintf(title, sizeof(title), "C-Terminal-3D | FPS: %d | Frametime: %.2f ms", fps, frametime_ms);
+        SetConsoleTitleA(title);
+
+        // Cap frame rate
+        float target_frametime = 1000.0f / FPS;
+        if (frametime_ms < target_frametime) {
+            Sleep((DWORD)(target_frametime - frametime_ms));
+        }
     }
+
     free(frag);
-    
+    free(terminal);
+    freeMesh(&bunny);
 
     return 0;
-    
 }

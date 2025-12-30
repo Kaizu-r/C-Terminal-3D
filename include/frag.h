@@ -12,6 +12,8 @@ typedef struct{
     int flag;   //to see if current frag is computed
     vec3 coord;
     vec3 color;
+    float depth;
+    vec3 normal;
 } Frag;
 
 Frag * makeFrag(int WIDTH, int HEIGHT);

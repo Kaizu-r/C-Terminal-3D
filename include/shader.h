@@ -10,16 +10,16 @@
 #include "frag.h"
 
 
-void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT);
-void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT);
-void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT);
-void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT);
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm);
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm);
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, vec3 norm);
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, vec3 norm);
 void fillTriangle(List **list, int WIDTH, int HEIGHT);
 void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT);
 
 
 //draw line in terms of x (bresenham algo)
-void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
+void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     float dz = vert2.z - vert1.z;
@@ -32,11 +32,14 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     int D = (dy << 1) - dx;
     int y = vert1.y;
     float z = vert1.z;
+
+    //interpolate z value for dept
     float zstep = (dx == 0) ? 0.0f : dz / (float) dx;
     for(int i = 0; i <= n; i++){
         vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
         if (!v_ptr) continue;
-        *v_ptr = (vec3){ i + (int) vert1.x, (int) y, z };
+        //create vertex with normal info
+        *v_ptr = (vec3){ i + (int) vert1.x, (int) y, z, norm.x, norm.y, norm.z };
         pushBack(list, (void*) v_ptr);
 
         if(D > 0){
@@ -48,7 +51,7 @@ void lineLow(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
     }
 }
 
-void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT){
+void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT, vec3 norm){
     int dx = vert2.x - vert1.x;
     int dy = vert2.y - vert1.y;
     float dz = vert2.z - vert1.z;
@@ -62,12 +65,17 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
     int D = (dx << 1) - dy;
     int x = vert1.x;
     float z = vert1.z;
+
+    //interpolate z value for depth
     float zstep = (dy == 0) ? 0.0f : dz / (float) dy;
 
     for(int i = 0; i <= n; i++){
         vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
         if (!v_ptr) continue;
-        *v_ptr = (vec3){ x, i + (int) vert1.y, (float) z };
+
+        //create vertex with normal info
+        *v_ptr = (vec3){ x, i + (int) vert1.y, (float) z, norm.x, norm.y, norm.z };
+        
         pushBack(list, (void*) v_ptr);
 
         if(D > 0){
@@ -79,7 +87,8 @@ void lineHigh(vec3 vert1, vec3 vert2, List **list, int n, int WIDTH, int HEIGHT)
     }
 }
 
-void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
+//general line draw function
+void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT, vec3 norm){
     int x0 = vert1.x;
     int y0 = vert1.y;
     int x1 = vert2.x;
@@ -88,28 +97,29 @@ void lineDraw(vec3 vert1, vec3 vert2, List **list, int WIDTH, int HEIGHT){
     int m = abs(y0 - y1);
     if(m < n){
         if(x0 > x1)
-            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT);
+            lineLow(vert2, vert1, list, n, WIDTH, HEIGHT, norm);
         else
-            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT);
+            lineLow(vert1, vert2, list, n, WIDTH, HEIGHT, norm);
     }
     else{
         if(y0 > y1)
-            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT);
+            lineHigh(vert2, vert1, list, m, WIDTH, HEIGHT, norm);
         else
-            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT);
+            lineHigh(vert1, vert2, list, m, WIDTH, HEIGHT, norm);
     }
 }
 
 
-
-void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT){
+//draw each triangle edge
+void drawTriangle(tri tri1, List **list, int WIDTH, int HEIGHT, vec3 norm){
     
-    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT);
-    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT);
-    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT);
+    lineDraw(tri1.v1, tri1.v2, list, WIDTH, HEIGHT, norm);
+    lineDraw(tri1.v2, tri1.v3, list, WIDTH, HEIGHT, norm);
+    lineDraw(tri1.v3, tri1.v1, list, WIDTH, HEIGHT, norm);
 
 }
 
+//rasterze the triangle
 void fillTriangle(List **list, int WIDTH, int HEIGHT){
     int len = (*list)->size;
     vec3 temp[len];
@@ -121,16 +131,20 @@ void fillTriangle(List **list, int WIDTH, int HEIGHT){
         p = p->next;
     }
 
+    //sort by y, x, then z
     mergesort3v(temp, 0, len - 1);
 
     for(int i = 0; i < len - 1; i++){
         if(temp[i].y == temp[i+1].y){
+            //check for x gap
             int dx = temp[i+1].x - temp[i].x;
+            //interpolate z value
             float dz = temp[i+1].z - temp[i].z;
             float zstep = (dx == 0) ? 0: (dz/dx);
 
+            //fill x gap
             for(int j = 1, k = zstep; j < dx; j++, k += zstep ){
-                vec3 tmp = {temp[i].x + j, temp[i].y, temp[i].z + k};
+                vec3 tmp = {temp[i].x + j, temp[i].y, temp[i].z + k, temp[i].nx, temp[i].ny, temp[i].nz};
                 vec3* v_ptr = (vec3*) malloc(sizeof(vec3));
                 if (!v_ptr) continue;
                 *v_ptr = tmp;
@@ -140,6 +154,7 @@ void fillTriangle(List **list, int WIDTH, int HEIGHT){
     }
 }
 
+//place fragment in frag buffer
 void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
     List_node * p = list->front;
     while(p != NULL){
@@ -147,14 +162,19 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
 
         vec2 coord = {v.x, v.y};
         Frag newFrag;
+        newFrag.flag = 1;
         newFrag.coord = v;
         
         vec3 color;
         vec3 light = {1, 1, 0};
-        vec3 normal = {v.x >= 0 ? 1:-1, v.y >= 0 ? 1:-1, v.z >= 0 ? 1:-1};
-        color.z = v.z;
+        vec3 normal = {v.nx, v.ny, v.nz};
 
+        //basic lambertian shading
+        float intensity = dot(normalize(light), normalize(normal));
+        newFrag.depth = v.z;
+        color.z = intensity;
 
+        newFrag.normal = (vec3){v.nx, v.ny, v.nz};
 
         newFrag.color = color;
 
@@ -164,7 +184,8 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
            continue; 
         }
         if(frag[index].flag){
-            frag[index] = (v.z < frag[index].color.z) ? newFrag : frag[index];
+            //depth test
+            frag[index] = (v.z < frag[index].depth) ? newFrag : frag[index];
         }
         else{
             frag[index] = newFrag;
