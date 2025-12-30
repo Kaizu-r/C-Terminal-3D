@@ -148,15 +148,17 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
 
         vec2 coord = {v.x, v.y};
         Frag newFrag;
+        newFrag.flag = 1;
         newFrag.coord = v;
         
         vec3 color;
         vec3 light = {1, 1, 0};
         vec3 normal = {v.nx, v.ny, v.nz};
         float intensity = dot(normalize(light), normalize(normal));
+        newFrag.depth = v.z;
         color.z = intensity;
 
-
+        newFrag.normal = (vec3){v.nx, v.ny, v.nz};
 
         newFrag.color = color;
 
@@ -166,7 +168,7 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
            continue; 
         }
         if(frag[index].flag){
-            frag[index] = (v.z < frag[index].color.z) ? newFrag : frag[index];
+            frag[index] = (v.z < frag[index].depth) ? newFrag : frag[index];
         }
         else{
             frag[index] = newFrag;
