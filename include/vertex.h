@@ -7,31 +7,28 @@ typedef struct vector3{
     float x;
     float y;
     float z;
-
-    //norm
-    float nx;
-    float ny;
-    float nz;
 } vec3;
 
 typedef struct vector2{
     float x;
     float y;
 } vec2;
+
+typedef struct Vertex{
+    vec3 position;
+    vec2 uv;
+    vec3 normal;
+} Vertex;
+
 //matrix structure
 typedef struct mat{
     float matrix[3][3];
 }mat3;
 typedef struct triangle{
-    vec3 v1;
-    vec3 v2;
-    vec3 v3; 
+    Vertex v1;
+    Vertex v2;
+    Vertex v3; 
 }tri;
-
-typedef struct Mesh{
-    vec3* vert;
-    int* index;
-}mesh;
 
 
 

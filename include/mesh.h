@@ -7,7 +7,7 @@
 #include <string.h>
 
 typedef struct {
-    vec3 * vertices;
+    Vertex * vertices;
     int * indices;
     vec3 rotation;
     vec3 position;
@@ -16,7 +16,7 @@ typedef struct {
     float scale;
 } Mesh;
 
-void initMesh(Mesh* mesh, vec3* vertices, int* indices, vec3 rotation, vec3 position, int vertexCount, int indexCount) {
+void initMesh(Mesh* mesh, Vertex* vertices, int* indices, vec3 rotation, vec3 position, int vertexCount, int indexCount) {
     mesh->vertices = vertices;
     mesh->indices = indices;
     mesh->rotation = rotation;
@@ -51,7 +51,7 @@ int loadMesh(Mesh* mesh, const char* filepath){
     }
 
     //allocate memory
-    mesh->vertices = (vec3*)malloc(sizeof(vec3) * vertexCount);
+    mesh->vertices = (Vertex*)malloc(sizeof(Vertex) * vertexCount);
     mesh->indices = (int*)malloc(sizeof(int) * indexCount);
 
     //reset file pointer
@@ -62,11 +62,13 @@ int loadMesh(Mesh* mesh, const char* filepath){
     while(fgets(line, sizeof(line), f)){
         if(line[0] == 'v' && line[1] == ' '){
             sscanf(line, "v %f %f %f", 
-                &mesh->vertices[vIndex].x, 
-                &mesh->vertices[vIndex].y, 
-                &mesh->vertices[vIndex].z);
+                &mesh->vertices[vIndex].position.x, 
+                &mesh->vertices[vIndex].position.y, 
+                &mesh->vertices[vIndex].position.z);
             // Flip Y-axis to correct orientation
-            mesh->vertices[vIndex].y = -mesh->vertices[vIndex].y;
+            mesh->vertices[vIndex].position.y = -mesh->vertices[vIndex].position.y;
+            mesh->vertices[vIndex].uv = (vec2){0.0f, 0.0f};
+            mesh->vertices[vIndex].normal = (vec3){0.0f, 0.0f, 1.0f};
             vIndex++;
         }
         else if(line[0] == 'f' && line[1] == ' '){

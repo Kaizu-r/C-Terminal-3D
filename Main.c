@@ -89,7 +89,7 @@ int main(void) {
     int n = bunny.vertexCount;
 
     //temp holder for transformed vertices
-    vec3 *terminal = (vec3 *)malloc(sizeof(vec3) * n);
+    Vertex *terminal = (Vertex *)malloc(sizeof(Vertex) * n);
     if (!terminal) {
         fprintf(stderr, "Failed to allocate terminal buffer\n");
         freeMesh(&bunny);
