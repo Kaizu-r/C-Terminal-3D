@@ -1,11 +1,9 @@
 #ifndef FRAG_H
 #define FRAG_H
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include "coords.h"
-#include "vertex.h"
 #include "utils.h"
 
 

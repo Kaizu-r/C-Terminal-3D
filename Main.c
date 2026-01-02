@@ -4,11 +4,7 @@
 #include <stdbool.h>
 #include <windows.h>
 
-#include "include/camera.h"
-#include "include/frag.h"
 #include "include/renderer.h"
-#include "include/shader.h"
-#include "include/utils.h"
 #include "include/mesh.h"
 
 #define WIDTH 100

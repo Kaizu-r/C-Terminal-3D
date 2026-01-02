@@ -1,11 +1,6 @@
 #ifndef LINE_SHADER_H
 #define LINE_SHADER_H
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
-#include "coords.h"
-#include "vertex.h"
-#include "utils.h"
 #include "list.h"
 #include "frag.h"
 

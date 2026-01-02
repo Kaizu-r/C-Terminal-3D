@@ -6,9 +6,6 @@
 #include <windows.h>
 
 #include "camera.h"
-#include "coords.h"
-#include "utils.h"
-#include "vertex.h"
 #include "shader.h"
 #include "list.h"
     
