@@ -162,7 +162,7 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
 
         vec2 coord = {v.x, v.y};
         Frag newFrag;
-        newFrag.flag = 1;
+        newFrag.flag = true;
         newFrag.coord = v;
         
         vec3 color;
@@ -190,7 +190,7 @@ void placeFrag(Frag* frag, List *list, int WIDTH, int HEIGHT){
         else{
             frag[index] = newFrag;
         }
-        frag[index].flag = 1;
+        frag[index].flag = true;
         p = p->next;
     }
 }
