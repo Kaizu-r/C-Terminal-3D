@@ -12,7 +12,7 @@
 
 float lightValue(vec3 col);
 char toAscii(float z);
-void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
+void draw(vec3 vertices[], int indices[], int shapes, int stride, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
 void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]);
 
 
@@ -41,7 +41,7 @@ char toAscii(float z){
 }
 
 //draw call
-void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
+void draw(vec3 vertices[], int indices[], int shapes, int stride, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
         for(int i = 0; i < shapes; i++){
             //triangle setup
             tri tri1 = triangleBuild(vertices, indices, i);
@@ -61,14 +61,14 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlan
 
                 // Near plane clipping: skip triangles too close to camera
                 // In view space, camera looks down -Z, so valid depth is negative
-                if(tri2.v1.z >= -nearPlane || tri2.v2.z >= -nearPlane || tri2.v3.z >= -nearPlane){
+                if(tri2.v1.z >= -cam.near_plane || tri2.v2.z >= -cam.near_plane || tri2.v3.z >= -cam.near_plane){
                     continue;  // Skip this triangle, it's too close or behind camera
                 }
 
                 //project the triangle vertices
-                proj(&tri2.v1, farPlane, nearPlane, fov, WIDTH, HEIGHT);
-                proj(&tri2.v2, farPlane, nearPlane, fov, WIDTH, HEIGHT);
-                proj(&tri2.v3, farPlane, nearPlane, fov, WIDTH, HEIGHT);
+                proj(&tri2.v1, cam.far_plane, cam.near_plane, cam.fov_deg, WIDTH, HEIGHT);
+                proj(&tri2.v2, cam.far_plane, cam.near_plane, cam.fov_deg, WIDTH, HEIGHT);
+                proj(&tri2.v3, cam.far_plane, cam.near_plane, cam.fov_deg, WIDTH, HEIGHT);
                 //convert to terminal coords
                 tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
                 tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
