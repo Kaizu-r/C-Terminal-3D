@@ -19,24 +19,24 @@ mat3 rotateZ(float radians);
 mat3 matMultiply(mat3 mat1, mat3 mat2);
 mat3 matTransform(mat3 matx, mat3 maty, mat3 matz);
 float dot(vec3 vec1, vec3 vec2);
-void model(vec3 vert[], int size, vec3 deg);
+void model(Vertex vert[], int size, vec3 deg);
 void proj(vec3 *vert, int far, int near, int fov, int WIDTH, int HEIGHT);
 float precision(float num, float factor);
-void translation(vec3 vert[], int size, vec3 trans);
-void scale(vec3 vert[], int size, float factor);
-void scale(vec3 vert[], int size, float factor);
-void view(vec3 vert[], int size, vec3 trans, vec3 rot);
+void translation(Vertex vert[], int size, vec3 trans);
+void scale(Vertex vert[], int size, float factor);
+void scale(Vertex vert[], int size, float factor);
+void view(Vertex vert[], int size, vec3 trans, vec3 rot);
 void camera(vec3 vert[], int size, float focal);
-void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans);
-void merge3v(vec3 vertices[], int i1, int j1, int i2, int j2);
-void mergesort3v(vec3 vertices[], int i, int j);
+void modelTransform(Vertex vert[], int size, float factor, vec3 deg, vec3 trans);
+void merge3v(Vertex vertices[], int i1, int j1, int i2, int j2);
+void mergesort3v(Vertex vertices[], int i, int j);
 void merge2v(vec2 vertices[], int i1, int j1, int i2, int j2);
 void mergesort2v(vec2 vertices[], int i, int j);
 float fast_inRoot(float number);
 float vect_distance(vec3 vec1, vec3 vec2);
 vec3 normal(vec3 vert1, vec3 vert2, vec3 vert3);
 vec3 v_angle(vec3 vert1, vec3 vert2);
-tri triangleBuild(vec3 vert[], int index[], int offset);
+tri triangleBuild(Vertex vert[], int index[], int offset);
 void swap(vec3 *p1, vec3 *p2);
 void interpolate(float res[], int n, float x0, float y0, float x1, float y1);
 vec3 normalize(vec3 v);
@@ -119,7 +119,7 @@ float dot(vec3 vec1, vec3 vec2){
 }
 
 //responsible for rotating our vertices based on model transfomration
-void model(vec3 vert[], int size, vec3 deg){
+void model(Vertex vert[], int size, vec3 deg){
     float radX = rad(deg.x);
     float radY = rad(deg.y);
     float radZ = rad(deg.z);
@@ -135,11 +135,11 @@ void model(vec3 vert[], int size, vec3 deg){
     
     for(int i = 0; i < vertNum; i++){
         //store first to temp
-        temp.x = vert[i].x * transform.matrix[0][0] + vert[i].y * transform.matrix[0][1] + vert[i].z * transform.matrix[0][2];
-        temp.y = vert[i].x * transform.matrix[1][0] + vert[i].y * transform.matrix[1][1] + vert[i].z * transform.matrix[1][2];
-        temp.z = vert[i].x * transform.matrix[2][0] + vert[i].y * transform.matrix[2][1] + vert[i].z * transform.matrix[2][2];
+        temp.x = vert[i].position.x * transform.matrix[0][0] + vert[i].position.y * transform.matrix[0][1] + vert[i].position.z * transform.matrix[0][2];
+        temp.y = vert[i].position.x * transform.matrix[1][0] + vert[i].position.y * transform.matrix[1][1] + vert[i].position.z * transform.matrix[1][2];
+        temp.z = vert[i].position.x * transform.matrix[2][0] + vert[i].position.y * transform.matrix[2][1] + vert[i].position.z * transform.matrix[2][2];
 
-        vert[i] = temp;
+        vert[i].position = temp;
     }
 }
 
@@ -175,25 +175,25 @@ float precision(float num, float factor){
 }
 
 //translates the vertex coords. Essentially, we move the world
-void translation(vec3 vert[], int size, vec3 trans){
+void translation(Vertex vert[], int size, vec3 trans){
     for(int i = 0; i < size; i++){
-        vert[i].x += trans.x;
-        vert[i].y += trans.y;
-        vert[i].z += trans.z;
+        vert[i].position.x += trans.x;
+        vert[i].position.y += trans.y;
+        vert[i].position.z += trans.z;
     }
 }
 
 //scale vertex by factor
-void scale(vec3 vert[], int size, float factor){
+void scale(Vertex vert[], int size, float factor){
     for(int i = 0; i < size; i++){
-        vert[i].x *= factor;
-        vert[i].y *= factor;
-        vert[i].z *= factor;
+        vert[i].position.x *= factor;
+        vert[i].position.y *= factor;
+        vert[i].position.z *= factor;
     }
 }
 
 //setup the view matrix
-void view(vec3 vert[], int size, vec3 trans, vec3 rot){
+void view(Vertex vert[], int size, vec3 trans, vec3 rot){
     // apply inverse camera rotation then translate into camera space
     // p_view = R^T * (p_world - t_cam)
     float radX = rot.x * (M_PI/180.0f);
@@ -206,9 +206,9 @@ void view(vec3 vert[], int size, vec3 trans, vec3 rot){
     for(int i = 0; i < size; i++){
         vec3 temp;
         // subtract camera translation
-        temp.x = vert[i].x - trans.x;
-        temp.y = vert[i].y - trans.y;
-        temp.z = vert[i].z - trans.z;
+        temp.x = vert[i].position.x - trans.x;
+        temp.y = vert[i].position.y - trans.y;
+        temp.z = vert[i].position.z - trans.z;
 
         // apply inverse rotation
         vec3 out;
@@ -216,21 +216,21 @@ void view(vec3 vert[], int size, vec3 trans, vec3 rot){
         out.y = temp.x * transform.matrix[1][0] + temp.y * transform.matrix[1][1] + temp.z * transform.matrix[1][2];
         out.z = temp.x * transform.matrix[2][0] + temp.y * transform.matrix[2][1] + temp.z * transform.matrix[2][2];
 
-        vert[i] = out;
+        vert[i].position = out;
     }
 }
 
 //applies model transformations: scaling, rotation, translation
-void modelTransform(vec3 vert[], int size, float factor, vec3 deg, vec3 trans){
+void modelTransform(Vertex vert[], int size, float factor, vec3 deg, vec3 trans){
     scale(vert, size, factor);
     model(vert, size, deg);
     translation(vert, size, trans);
 }
 
 //custom merge sort algo
-void merge3v(vec3 vertices[], int i1, int j1, int i2, int j2){
+void merge3v(Vertex vertices[], int i1, int j1, int i2, int j2){
     int start1, start2, k;
-    vec3 temp[j2 + 1];
+    Vertex temp[j2 + 1];
     
     start1 =  i1;
     start2 = i2;
@@ -238,15 +238,15 @@ void merge3v(vec3 vertices[], int i1, int j1, int i2, int j2){
     //compare and copy to temp
     while(start1 <= j1 && start2 <= j2){
         //sort by y and x ascendingly, then descending for z
-        if(vertices[start1].y < vertices[start2].y)
+        if(vertices[start1].position.y < vertices[start2].position.y)
             temp[k++] = vertices[start1++]; 
-        else if(vertices[start2].y < vertices[start1].y)
+        else if(vertices[start2].position.y < vertices[start1].position.y)
             temp[k++] = vertices[start2++]; 
-        else if(vertices[start1].x < vertices[start2].x) //now we check for lesser x values if y is equal
+        else if(vertices[start1].position.x < vertices[start2].position.x) //now we check for lesser x values if y is equal
             temp[k++] = vertices[start1++];
-        else if(vertices[start2].x < vertices[start1].x)
+        else if(vertices[start2].position.x < vertices[start1].position.x)
             temp[k++] = vertices[start2++];
-        else if(vertices[start1].z < vertices[start2].z) //now we check for z if x and y are equal
+        else if(vertices[start1].position.z < vertices[start2].position.z) //now we check for z if x and y are equal
             temp[k++] = vertices[start1++];
         else
             temp[k++] = vertices[start2++];
@@ -266,7 +266,7 @@ void merge3v(vec3 vertices[], int i1, int j1, int i2, int j2){
 
 }
 
-void mergesort3v(vec3 vertices[], int i, int j){
+void mergesort3v(Vertex vertices[], int i, int j){
     if(i >= j)
         return;
     int mid = (i + j)/2;
@@ -383,7 +383,7 @@ vec3 v_angle(vec3 vert1, vec3 vert2){
 }
 
 
-tri triangleBuild(vec3 vert[], int index[], int offset){
+tri triangleBuild(Vertex vert[], int index[], int offset){
     tri tri1;
     tri1.v1 = vert[index[offset*3]];
     tri1.v2 = vert[index[offset*3 + 1]];

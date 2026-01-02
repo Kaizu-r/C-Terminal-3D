@@ -1,9 +1,7 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include <stdlib.h>
 #include "utils.h"
-#include "vertex.h"
 
 typedef struct list_node{
     void* v;

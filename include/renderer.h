@@ -6,16 +6,13 @@
 #include <windows.h>
 
 #include "camera.h"
-#include "coords.h"
-#include "utils.h"
-#include "vertex.h"
 #include "shader.h"
 #include "list.h"
     
 
 float lightValue(vec3 col);
 char toAscii(float z);
-void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
+void draw(Vertex vertices[], int indices[], int shapes, int stride, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT);
 void render(Frag *frag, int WIDTH, int HEIGHT, char screen[]);
 
 
@@ -44,16 +41,16 @@ char toAscii(float z){
 }
 
 //draw call
-void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlane, float farPlane, float fov, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
+void draw(Vertex vertices[], int indices[], int shapes, int stride, Camera cam, Frag * frag, char * screen, int WIDTH, int HEIGHT){
         for(int i = 0; i < shapes; i++){
             //triangle setup
             tri tri1 = triangleBuild(vertices, indices, i);
 
             //calculate normal
-            vec3 norm = normal(tri1.v1, tri1.v2, tri1.v3);
+            vec3 norm = normal(tri1.v1.position, tri1.v2.position, tri1.v3.position);
 
             //backface culling
-            vec3 distance_to_cam = {tri1.v1.x - cam.position.x, tri1.v1.y - cam.position.y, tri1.v1.z - cam.position.z};
+            vec3 distance_to_cam = {tri1.v1.position.x - cam.position.x, tri1.v1.position.y - cam.position.y, tri1.v1.position.z - cam.position.z};
             
             if(dot(norm, distance_to_cam) < 0){
                 tri tri2 = tri1;
@@ -64,18 +61,18 @@ void draw(vec3 vertices[], int indices[], int shapes, int stride, float nearPlan
 
                 // Near plane clipping: skip triangles too close to camera
                 // In view space, camera looks down -Z, so valid depth is negative
-                if(tri2.v1.z >= -nearPlane || tri2.v2.z >= -nearPlane || tri2.v3.z >= -nearPlane){
+                if(tri2.v1.position.z >= -cam.near_plane || tri2.v2.position.z >= -cam.near_plane || tri2.v3.position.z >= -cam.near_plane){
                     continue;  // Skip this triangle, it's too close or behind camera
                 }
 
                 //project the triangle vertices
-                proj(&tri2.v1, farPlane, nearPlane, fov, WIDTH, HEIGHT);
-                proj(&tri2.v2, farPlane, nearPlane, fov, WIDTH, HEIGHT);
-                proj(&tri2.v3, farPlane, nearPlane, fov, WIDTH, HEIGHT);
+                proj(&tri2.v1.position, cam.far_plane, cam.near_plane, cam.fov_deg, WIDTH, HEIGHT);
+                proj(&tri2.v2.position, cam.far_plane, cam.near_plane, cam.fov_deg, WIDTH, HEIGHT);
+                proj(&tri2.v3.position, cam.far_plane, cam.near_plane, cam.fov_deg, WIDTH, HEIGHT);
                 //convert to terminal coords
-                tri2.v1 = toTerminal(tri2.v1, WIDTH, HEIGHT);
-                tri2.v2 = toTerminal(tri2.v2, WIDTH, HEIGHT);
-                tri2.v3 =  toTerminal(tri2.v3, WIDTH, HEIGHT);
+                tri2.v1.position = toTerminal(tri2.v1.position, WIDTH, HEIGHT);
+                tri2.v2.position = toTerminal(tri2.v2.position, WIDTH, HEIGHT);
+                tri2.v3.position =  toTerminal(tri2.v3.position, WIDTH, HEIGHT);
 
                //create list for rasterization
                 List * list = createList();

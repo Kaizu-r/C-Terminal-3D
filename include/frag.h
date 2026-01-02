@@ -1,15 +1,14 @@
 #ifndef FRAG_H
 #define FRAG_H
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "coords.h"
-#include "vertex.h"
 #include "utils.h"
 
 
 typedef struct{
-    int flag;   //to see if current frag is computed
+    bool flag;   //to see if current frag is computed
     vec3 coord;
     vec3 color;
     float depth;
@@ -24,7 +23,7 @@ void resetFrag(Frag* frag, int WIDTH, int HEIGHT);
 Frag * makeFrag(int WIDTH, int HEIGHT){
     Frag *frag = (Frag*) malloc(sizeof(Frag) * WIDTH * HEIGHT);  
     for(int i = 0; i < WIDTH * HEIGHT; i++){
-        frag[i].flag = 0;
+        frag[i].flag = false;
     }
     return frag;
 }
@@ -41,7 +40,7 @@ Frag getFrag(Frag* frag, int x, int y, int WIDTH, int HEIGHT){
 
 void resetFrag(Frag* frag, int WIDTH, int HEIGHT){
     for(int i = 0; i < WIDTH * HEIGHT; i++){
-        frag[i].flag = 0;
+        frag[i].flag = false;
     }
 }
 

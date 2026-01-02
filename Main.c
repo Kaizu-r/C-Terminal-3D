@@ -4,47 +4,48 @@
 #include <stdbool.h>
 #include <windows.h>
 
-#include "include/camera.h"
-#include "include/frag.h"
 #include "include/renderer.h"
-#include "include/shader.h"
-#include "include/utils.h"
 #include "include/mesh.h"
 
 #define WIDTH 100
 #define HEIGHT 50
 #define FPS 24
 #define TICK 0.1f
-#define ROTATION_SPEED 90.0f  // degrees per second
-#define MOVE_SPEED 5.0f       // units per second
+#define CAMERA_ROTATION_SPEED 90.0f  // degrees per second
+#define CAMERA_MOVE_SPEED 5.0f       // units per second
+#define MESH_SCALE_SPEED 5.0f
 
 //input handling
-static void poll_input(Mesh *target, bool *quit_requested, float delta_time) {
+static void poll_input(Camera *cam, Mesh *target, bool *quit_requested, float delta_time) {
     if (GetAsyncKeyState('Q') & 0x8000) {
         *quit_requested = true;
         return;
     }
 
-    // Movement
-    float move_delta = MOVE_SPEED * delta_time;
-    if (GetAsyncKeyState('W') & 0x8000) target->position.z += move_delta;
-    if (GetAsyncKeyState('S') & 0x8000) target->position.z -= move_delta;
-    if (GetAsyncKeyState('A') & 0x8000) target->position.x -= move_delta;
-    if (GetAsyncKeyState('D') & 0x8000) target->position.x += move_delta;
-    if (GetAsyncKeyState('R') & 0x8000) target->position.y -= move_delta;
-    if (GetAsyncKeyState('F') & 0x8000) target->position.y += move_delta;
 
-    // Rotation
-    float rotation_delta = ROTATION_SPEED * delta_time;
-    if (GetAsyncKeyState('I') & 0x8000) target->rotation.x -= rotation_delta;
-    if (GetAsyncKeyState('K') & 0x8000) target->rotation.x += rotation_delta;
-    if (GetAsyncKeyState('J') & 0x8000) target->rotation.y -= rotation_delta;
-    if (GetAsyncKeyState('L') & 0x8000) target->rotation.y += rotation_delta;
-    if (GetAsyncKeyState('U') & 0x8000) target->rotation.z -= rotation_delta;
-    if (GetAsyncKeyState('O') & 0x8000) target->rotation.z += rotation_delta;
+    // Camera translation (local space)
+    float forward = 0.0f, strafe = 0.0f, lift = 0.0f;
+    if (GetAsyncKeyState('W') & 0x8000) forward -= 1.0f;
+    if (GetAsyncKeyState('S') & 0x8000) forward += 1.0f;
+    if (GetAsyncKeyState('A') & 0x8000) strafe += 1.0f;
+    if (GetAsyncKeyState('D') & 0x8000) strafe -= 1.0f;
+    if (GetAsyncKeyState('R') & 0x8000) lift -= 1.0f;
+    if (GetAsyncKeyState('F') & 0x8000) lift += 1.0f;
+    camera_move(cam, forward, strafe, lift, delta_time);
+
+    // Camera rotation
+    float pitch = 0.0f, yaw = 0.0f, roll = 0.0f;
+    float look_step = delta_time;  // scaled inside camera_rotate by look_speed
+    if (GetAsyncKeyState('I') & 0x8000) pitch -= look_step;
+    if (GetAsyncKeyState('K') & 0x8000) pitch += look_step;
+    if (GetAsyncKeyState('J') & 0x8000) yaw   += look_step;
+    if (GetAsyncKeyState('L') & 0x8000) yaw   -= look_step;
+    if (GetAsyncKeyState('U') & 0x8000) roll  -= look_step;
+    if (GetAsyncKeyState('O') & 0x8000) roll  += look_step;
+    camera_rotate(cam, pitch, yaw, roll);
     
     //scale
-    float scale_delta = 5.0f * delta_time;
+    float scale_delta = MESH_SCALE_SPEED * delta_time;
     if (GetAsyncKeyState('G') & 0x8000) target->scale += scale_delta;
     if (GetAsyncKeyState('H') & 0x8000) target->scale -= scale_delta;
     //reset
@@ -75,18 +76,20 @@ int main(void) {
     setMeshPosition(&bunny, model_translation);
 
     // setup camera here
-    Camera cam = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 1.0f};
-
-    //far and near planes
-    float far_d = 100.0f;
-    float near_d = 1.0f;
-
-    float fov = 70.0f;
+    Camera cam = camera_create(
+        (vec3){0.0f, 0.0f, 0.0f},
+        (vec3){0.0f, 0.0f, 0.0f},
+        70.0f,
+        1.0f,
+        100.0f,
+        CAMERA_MOVE_SPEED,
+        CAMERA_ROTATION_SPEED
+    );
 
     int n = bunny.vertexCount;
 
     //temp holder for transformed vertices
-    vec3 *terminal = (vec3 *)malloc(sizeof(vec3) * n);
+    Vertex *terminal = (Vertex *)malloc(sizeof(Vertex) * n);
     if (!terminal) {
         fprintf(stderr, "Failed to allocate terminal buffer\n");
         freeMesh(&bunny);
@@ -97,7 +100,7 @@ int main(void) {
     char screen[HEIGHT * WIDTH + HEIGHT];
     Frag *frag = makeFrag(WIDTH, HEIGHT);
 
-    printf("Controls: WASD move, R/F rise/fall, I/K/J/L/U/O rotate, Q quit\n");
+    printf("Controls: WASD/RF move camera, I/K/J/L/U/O rotate camera, G/H scale mesh, Q quit\n");
     printf("Press any key to start...\n");
     getchar();
     system("cls");
@@ -117,7 +120,7 @@ int main(void) {
         }
 
         // Poll input every frame with delta time
-        poll_input(&bunny, &quit_requested, delta_time);
+        poll_input(&cam, &bunny, &quit_requested, delta_time);
         if (quit_requested) {
             break;
         }
@@ -128,7 +131,7 @@ int main(void) {
         int shapes = bunny.indexCount / 3;
 
         // render the frame
-        draw(terminal, bunny.indices, shapes, stride, near_d, far_d, fov, cam, frag, screen, WIDTH, HEIGHT);
+        draw(terminal, bunny.indices, shapes, stride, cam, frag, screen, WIDTH, HEIGHT);
 
         //more fps bs and delta time bs
         clock_t end = clock();
