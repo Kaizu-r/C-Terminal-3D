@@ -52,7 +52,7 @@ void draw(Vertex vertices[], int indices[], int shapes, int stride, Camera cam, 
             //backface culling
             vec3 distance_to_cam = {tri1.v1.position.x - cam.position.x, tri1.v1.position.y - cam.position.y, tri1.v1.position.z - cam.position.z};
             
-            if(dot(norm, distance_to_cam) < 0){
+            if(dot(norm, distance_to_cam) > 0){
                 tri tri2 = tri1;
                 //move to camera space
                 view(&tri2.v1, 1, cam.position, cam.rotation);
