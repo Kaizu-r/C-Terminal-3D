@@ -1,6 +1,7 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 #include <stdlib.h>
+#include <stdbool.h>
 
 //vector 
 typedef struct vector3{
