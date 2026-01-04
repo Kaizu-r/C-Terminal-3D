@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdbool.h>
 #include <windows.h>
 
 #include "include/renderer.h"
@@ -59,8 +58,8 @@ int main(void) {
     
     //load bunny mesh
     Mesh bunny;
-    bunny.scale = 1.0f;
-    if (loadMesh(&bunny, "bunny.obj") != 0) {
+    bunny.scale = 10.0f;
+    if (loadMesh(&bunny, "models/eyeball.obj") != 0) {
         printf("Failed to load bunny.obj\n");
         return 1;
     }
