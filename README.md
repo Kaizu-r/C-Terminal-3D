@@ -47,11 +47,34 @@ gcc Main.c -o C-Terminal-3D.exe
 
 ### Running
 
+**Run with default model (bunny.obj):**
 ```bash
 .\C-Terminal-3D.exe
 ```
 
-The program will load the eyeball model by default. Follow on-screen prompts to begin.
+**List available models:**
+```bash
+.\C-Terminal-3D.exe --list
+```
+
+**Load a specific model:**
+```bash
+.\C-Terminal-3D.exe --load models/cube_quad.obj
+```
+
+**Show help:**
+```bash
+.\C-Terminal-3D.exe --help
+```
+
+### Command-Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| *(no arguments)* | Load default model (bunny.obj) | `.\C-Terminal-3D.exe` |
+| `--list` | List all .obj files in models directory | `.\C-Terminal-3D.exe --list` |
+| `--load <path>` | Load a specific .obj file | `.\C-Terminal-3D.exe --load models/sphere.obj` |
+| `--help` or `-h` | Display usage information | `.\C-Terminal-3D.exe --help` |
 
 ### Controls
 
@@ -90,9 +113,9 @@ C-Terminal-3D/
 │   ├── utils.h         # Math utilities, matrices, transformations
 │   └── vertex.h        # Vertex and primitive data structures
 ├── models/
-│   ├── bunny.obj       # Stanford bunny model
+│   ├── bunny.obj       # Stanford bunny model (default)
 │   ├── cube_quad.obj   # Cube mesh
-│   ├── eyeball.obj     # Eyeball model (default)
+│   ├── eyeball.obj     # Eyeball model
 │   └── sphere.obj      # Sphere mesh
 └── README.md
 ```
@@ -123,7 +146,7 @@ C-Terminal-3D/
 
 ## 🎯 Configuration
 
-Edit constants in [Main.c](Main.c#L9-L14):
+Edit constants in [Main.c](Main.c#L9-L15):
 ```c
 #define WIDTH 100              // Terminal width in characters
 #define HEIGHT 50              // Terminal height in characters
@@ -131,11 +154,14 @@ Edit constants in [Main.c](Main.c#L9-L14):
 #define CAMERA_ROTATION_SPEED 90.0f  // Degrees per second
 #define CAMERA_MOVE_SPEED 5.0f       // Units per second
 #define MESH_SCALE_SPEED 5.0f        // Scale factor per second
+#define DEFAULT_MODEL "models/bunny.obj"  // Default model when no args
 ```
 
-Change the loaded model on [line 68](Main.c#L68):
-```c
-loadMesh(&bunny, "models/eyeball.obj")  // Change to bunny.obj, sphere.obj, etc.
+To change the default model loaded when running without arguments, modify the `DEFAULT_MODEL` constant.
+
+Alternatively, use command-line arguments to load different models without recompiling:
+```bash
+.\C-Terminal-3D.exe --load models/sphere.obj
 ```
 
 ## 📝 License

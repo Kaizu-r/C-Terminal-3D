@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
+#include <string.h>
 
 #include "include/renderer.h"
 #include "include/mesh.h"
@@ -13,6 +14,41 @@
 #define CAMERA_ROTATION_SPEED 90.0f  // degrees per second
 #define CAMERA_MOVE_SPEED 5.0f       // units per second
 #define MESH_SCALE_SPEED 5.0f
+#define DEFAULT_MODEL "models/bunny.obj"
+
+// Function to list .obj files in the models directory
+static void list_obj_files() {
+    WIN32_FIND_DATAA findData;
+    HANDLE hFind = FindFirstFileA("models\\*.obj", &findData);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        printf("No .obj files found in models directory\n");
+        return;
+    }
+    
+    printf("Available .obj files in models directory:\n");
+    printf("------------------------------------------\n");
+    do {
+        printf("  - %s\n", findData.cFileName);
+    } while (FindNextFileA(hFind, &findData) != 0);
+    
+    FindClose(hFind);
+}
+
+// Function to print usage information
+static void print_usage(const char* program_name) {
+    printf("Usage: %s [OPTIONS]\n", program_name);
+    printf("\nOptions:\n");
+    printf("  <no arguments>     Load default model (%s)\n", DEFAULT_MODEL);
+    printf("  --list             List all .obj files in models directory\n");
+    printf("  --load <path>      Load a specific .obj file from given path\n");
+    printf("\nExamples:\n");
+    printf("  %s                        # Load default bunny.obj\n", program_name);
+    printf("  %s --list                 # List available models\n", program_name);
+    printf("  %s --load models/cube_quad.obj  # Load specific model\n", program_name);
+    printf("\n");
+}
+
 
 //input handling
 static void poll_input(Camera *cam, Mesh *target, bool *quit_requested, float delta_time) {
@@ -54,13 +90,36 @@ static void poll_input(Camera *cam, Mesh *target, bool *quit_requested, float de
     }
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    // Handle command-line arguments
+    const char* model_path = DEFAULT_MODEL;
+    
+    if (argc > 1) {
+        if (strcmp(argv[1], "--list") == 0) {
+            list_obj_files();
+            return 0;
+        } else if (strcmp(argv[1], "--load") == 0) {
+            if (argc < 3) {
+                printf("Error: --load requires a file path argument\n\n");
+                print_usage(argv[0]);
+                return 1;
+            }
+            model_path = argv[2];
+        } else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        } else {
+            printf("Error: Unknown option '%s'\n\n", argv[1]);
+            print_usage(argv[0]);
+            return 1;
+        }
+    }
     
     //load bunny mesh
     Mesh bunny;
     bunny.scale = 10.0f;
-    if (loadMesh(&bunny, "models/eyeball.obj") != 0) {
-        printf("Failed to load bunny.obj\n");
+    if (loadMesh(&bunny, model_path) != 0) {
+        printf("Failed to load %s\n", model_path);
         return 1;
     }
 
